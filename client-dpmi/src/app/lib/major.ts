@@ -1,0 +1,15 @@
+export const majors = [
+    "Hukum",
+    "Hubungan Internasional",
+    "Komunikasi",
+    "Desain Komunikasi Visual",
+    "Agribisnis",
+    "Arsitektur",
+    "Desain Interior",
+    "Manajemen",
+    "Administrasi Bisnis",
+    "Akuntansi",
+    "S2 Manajemen Teknologi",
+    "Fakultas Teknik",
+    "Aktuaria",
+  ];
