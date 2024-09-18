@@ -5,6 +5,10 @@ interface MajorCardProps {
 }
 
 export default function MajorCard({ name }: MajorCardProps) {
+  if (!name) {
+    return <p>Error: Name is missing.</p>;
+  }
+
   return (
     <Link
       href={`response/${name.toLowerCase().replace(/\s+/g, "-")}`}

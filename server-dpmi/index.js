@@ -19,40 +19,72 @@ const pool = new Pool({
 
 app.use(express.json());
 
-// Test PostgreSQL connection
-app.get("/test-db", async (req, res) => {
+// Test Supabase client
+app.get("/major-list", async (req, res) => {
   try {
-    const result = await pool.query("SELECT NOW()");
-    res.json({ message: "Connected to PostgreSQL!", time: result.rows[0].now });
-  } catch (error) {
+    const { data, error } = await supabase.from("major").select("*");
+
+    if (error) {
+      return res.status(500).json({
+        response: {
+          status: "error",
+          message: "Failed to fetch data",
+          details: error.message,
+        },
+        data: null,
+      });
+    }
+    res.json({
+      response: {
+        status: "success",
+        message: "Data fetched successfully",
+      },
+      data: data,
+    });
+  } catch (err) {
     res.status(500).json({
-      error: "Failed to connect to PostgreSQL",
-      details: error.message,
+      response: {
+        status: "error",
+        message: "Internal server error",
+        details: err.message,
+      },
+      data: null,
     });
   }
 });
 
-// Test Supabase client
-app.get("/test-supabase", async (req, res) => {
-  const { data, error } = await supabase.from("major").select("*");
+app.get("/setup-data", async (req, res) => {
+  try {
+    const { data, error } = await supabase.from("setup").select("*");
 
-  if (error) {
-    return res
-      .status(500)
-      .json({ error: "Failed to fetch data", details: error.message });
+    if (error) {
+      return res.status(500).json({
+        response: {
+          status: "error",
+          message: "Failed to fetch data",
+          details: error.message,
+        },
+        data: null,
+      });
+    }
+
+    res.json({
+      response: {
+        status: "success",
+        message: "Data fetched successfully",
+      },
+      data: data,
+    });
+  } catch (err) {
+    res.status(500).json({
+      response: {
+        status: "error",
+        message: "Internal server error",
+        details: err.message,
+      },
+      data: null,
+    });
   }
-
-  res.json(data);
-});
-
-app.get("/test-setup", async (req, res) => {
-  const { data, error } = await supabase.from("setup").select("*");
-  if (error) {
-    return res
-      .status(500)
-      .json({ error: "Failed to fetch data", details: error.message });
-  }
-  res.json(data);
 });
 
 app.listen(port, () => {

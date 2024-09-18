@@ -1,14 +1,15 @@
 import MajorCard from "@/components/admin/MajorCard";
-import React from "react";
-import { majors } from "@/app/lib/major";
+import { fetchMajor } from "@/service/api/major";
 
-export default function page() {
-    
+
+export default async function page() {
+  const majors = await fetchMajor();
+
   return (
     <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 min-h-screen">
-      {majors.map((major, index) => (
-        <MajorCard key={index} name={major} />
-      ))}
-    </section>
-  );
+            {majors.map((major) => (
+                <MajorCard key={major.id} name={major.name} />
+            ))}
+        </section>
+  )
 }
