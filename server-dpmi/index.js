@@ -1,92 +1,19 @@
 require("dotenv").config();
 const express = require("express");
-const { createClient } = require("@supabase/supabase-js");
-const { Pool } = require("pg");
-
 const app = express();
-const port = 4000;
+require("./config/db");
+const cors = require("cors");
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-);
-
-// Initialize PostgreSQL client
-const pool = new Pool({
-  connectionString: process.env.SUPABASE_URL, // Supabase provides a direct connection URL for PostgreSQL
-});
-
+app.use(cors())
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Test Supabase client
-app.get("/major-list", async (req, res) => {
-  try {
-    const { data, error } = await supabase.from("major").select("*");
+const routerMajor = require("./routes/majorRoute");
 
-    if (error) {
-      return res.status(500).json({
-        response: {
-          status: "error",
-          message: "Failed to fetch data",
-          details: error.message,
-        },
-        data: null,
-      });
-    }
-    res.json({
-      response: {
-        status: "success",
-        message: "Data fetched successfully",
-      },
-      data: data,
-    });
-  } catch (err) {
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
-  }
-});
+app.use("/api/v1/major", routerMajor);
+app.use("/api/v1/major", routerMajor);
 
-app.get("/setup-data", async (req, res) => {
-  try {
-    const { data, error } = await supabase.from("setup").select("*");
-
-    if (error) {
-      return res.status(500).json({
-        response: {
-          status: "error",
-          message: "Failed to fetch data",
-          details: error.message,
-        },
-        data: null,
-      });
-    }
-
-    res.json({
-      response: {
-        status: "success",
-        message: "Data fetched successfully",
-      },
-      data: data,
-    });
-  } catch (err) {
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
-  }
-});
-
+const port = process.env.PORT | 4000;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

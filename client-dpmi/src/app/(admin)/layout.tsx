@@ -2,7 +2,6 @@ import Sidebar from "@/components/admin/Sidebar";
 import Image from "next/image";
 import PULOGO from "@/assets/pu_logo.jpg";
 import { AdminDashboardContextProvider } from "@/context/AdminDashboardContext"
-import LayoutClientDashboard from "@/components/admin/LayoutClient"
 
 export default async function AdminLayout({
     children,
@@ -47,10 +46,6 @@ export default async function AdminLayout({
             current: false,
         },
     ];
-    const userNavigation = [
-        { name: "Your profile", href: "/../dashboard/profile" },
-    ];
-
     // if (session?.user.role_id === 2 || session?.user.role_id === 8) {
     //     return redirect("/");
     // }
