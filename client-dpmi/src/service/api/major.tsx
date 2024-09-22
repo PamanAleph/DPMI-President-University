@@ -2,6 +2,7 @@ import axios from "axios";
 import { API_MAJOR } from "@/config/config";
 import Major from "@/models/major";
 
+
 // Fetch data function
 export const fetchMajor = async (): Promise<Major[]> => {
   try {
@@ -62,16 +63,11 @@ export const deleteMajor = async (majorId: number): Promise<Major[]> => {
   }
 };
 
-export const findMajorBySlug = async (
-  major_name: string
-): Promise<Major | null> => {
+export const findMajorBySlug = async (major_name: string): Promise<Major | null> => {
   try {
-    const response = await axios.get<{ data: Major[] }>(
-      `${API_MAJOR}/${major_name}`
-    );
-
-    if (response.data.data.length > 0) {
-      return response.data.data[0];
+    const response = await axios.get<{ data: Major }>(`${API_MAJOR}/${major_name}`);
+    if (response.data.data) {
+      return response.data.data;
     }
 
     return null;
@@ -80,3 +76,4 @@ export const findMajorBySlug = async (
     return null;
   }
 };
+

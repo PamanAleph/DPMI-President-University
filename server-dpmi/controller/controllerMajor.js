@@ -1,4 +1,4 @@
-const { findAll, findById, createData, updateData, deleteData, findMajorBySlug } = require("../service/service");
+const { findAll, findById, createData, updateData, deleteData,  findBySlug} = require("../service/serviceMajor");
 
 const getAllData = async (req, res) => {
   try {
@@ -126,6 +126,37 @@ const deleteExistingData = async (req, res) => {
   }
 };
 
+const getMajorBySlug = async (req, res) =>{
+  const {slug} = req.params;
+  try {
+    const data = await findBySlug(slug);
+    if (!data) {
+      return res.status(404).json({
+        response: {
+          status: "error",
+          message: "Data not found",
+        },
+        data: null,
+      });
+    }
+    res.json({
+      response: {
+        status: "success",
+        message: "Data fetched successfully",
+      },
+      data: data,
+    });
+  } catch (err) {
+    console.error("Internal server error:", err);
+    res.status(500).json({
+      response: {
+        status: "error",
+        message: "Internal server error",
+        details: err.message,
+      },
+      data: null,
+    });
+  }
+}
 
-
-module.exports = { getAllData, getDataById, createNewData, updateExistingData, deleteExistingData};
+module.exports = { getAllData, getDataById, createNewData, updateExistingData, deleteExistingData, getMajorBySlug};

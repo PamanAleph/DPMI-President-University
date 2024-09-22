@@ -72,7 +72,22 @@ const deleteData = async (id) => {
   }
 };
 
+const findBySlug = async (slug) => {
+  try {
+    const { data, error } = await supabase
+    .from("major")
+    .select("*")
+    .eq("slug", slug)
+    .single();
 
+    if (error) {
+      console.log(error);
+    }
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 module.exports = {
   findAll,
@@ -80,4 +95,5 @@ module.exports = {
   createData,
   updateData,
   deleteData,
+  findBySlug
 };
