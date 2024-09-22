@@ -1,20 +1,16 @@
-import MajorCard from "@/components/admin/MajorCard";
 import { fetchMajor } from "@/service/api/major";
 import CreateMajor from "./_components/CreateMajor";
+import MajorTable from "@/components/admin/MajorTable";
 
 export default async function page() {
   const majors = await fetchMajor();
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 h-screen bg-[#FBFBFB]">
       <div className="flex justify-end">
-        <CreateMajor/>
+        <CreateMajor />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 min-h-screen">
-        {majors.map((major) => (
-          <MajorCard key={major.id} major={major} />
-        ))}
-      </div>
+      <MajorTable majors={majors} />
     </section>
   );
 }
