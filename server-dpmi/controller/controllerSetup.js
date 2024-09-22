@@ -1,4 +1,4 @@
-const { findAll, findById, createData, updateData, deleteData,  findBySlug} = require("../service/serviceMajor");
+const { findAll, findById, createData, updateData, deleteData,  findBySlug} = require("../service/serviceSetup");
 
 const getAllData = async (req, res) => {
   try {

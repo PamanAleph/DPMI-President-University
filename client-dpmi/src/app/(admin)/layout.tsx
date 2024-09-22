@@ -8,44 +8,6 @@ export default async function AdminLayout({
 }: {
     children: React.ReactNode;
 }) {
-
-    const teams = [
-        {
-            id: 1,
-            name: "PUFA Computing",
-            href: "#",
-            initial: "PUFA",
-            current: false,
-        },
-        {
-            id: 2,
-            name: "PUMA Informatics",
-            href: "#",
-            initial: "PUMA",
-            current: false,
-        },
-        {
-            id: 3,
-            name: "PUMA Information System",
-            href: "#",
-            initial: "PUMA",
-            current: false,
-        },
-        {
-            id: 4,
-            name: "PUMA Visual Communication Design",
-            href: "#",
-            initial: "PUMA",
-            current: false,
-        },
-        {
-            id: 5,
-            name: "PUMA Interior Design",
-            href: "#",
-            initial: "PUMA",
-            current: false,
-        },
-    ];
     // if (session?.user.role_id === 2 || session?.user.role_id === 8) {
     //     return redirect("/");
     // }
@@ -68,7 +30,7 @@ export default async function AdminLayout({
                             />
                         </div>
 
-                        <Sidebar teams={teams} />
+                        <Sidebar/>
                     </div>
                 </div>
 

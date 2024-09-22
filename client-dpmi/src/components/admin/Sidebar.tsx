@@ -1,33 +1,21 @@
 "use client";
 import {
   CalendarIcon,
-  BuildingStorefrontIcon,
-  DocumentDuplicateIcon,
   HomeIcon,
   UsersIcon,
   NewspaperIcon,
-  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 import React from "react";
 import { Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
-interface Team {
-  name: string;
-  href: string;
-  initial: string;
-}
 
-interface SidebarProps {
-  teams: Team[];
-}
-
-function classNames(...classes: any[]) {
+function classNames(...classes: unknown[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-const Sidebar = ({ teams }: SidebarProps) => {
+const Sidebar = () => {
   const currentPath = usePathname();
   const navigation = [
     {
@@ -36,8 +24,8 @@ const Sidebar = ({ teams }: SidebarProps) => {
       icon: HomeIcon,
     },
     {
-      name: "Form",
-      href: "/admin/form",
+      name: "Setup",
+      href: "/admin/setup",
       icon: CalendarIcon,
     },
     {
