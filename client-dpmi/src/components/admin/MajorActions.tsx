@@ -12,11 +12,23 @@ interface MajorActionsProps {
 
 export default function MajorActions({ majorId, major }: MajorActionsProps) {
   const handleEditMajor = async () => {
+    let emailsArray: string[] = [];
+    if (typeof major.emails === "string") {
+      try {
+        emailsArray = JSON.parse(major.emails);
+      } catch (error) {
+        console.error("Error parsing emails:", error);
+        emailsArray = []; 
+      }
+    }
+  
+    const emailsString = emailsArray.join(", ");
+  
     const { value: majorData } = await Swal.fire({
       title: "Edit Major",
       html: `<input type="text" id="major-name" class="swal2-input" value="${major.major_name}" placeholder="Major Name"/>
-                 <input type="text" id="major-head" class="swal2-input" value="${major.major_head}" placeholder="Major Head"/>
-                 <input type="text" id="emails" class="swal2-input" value="${major.emails}" placeholder="Emails (comma separated)"/>`,
+             <input type="text" id="major-head" class="swal2-input" value="${major.major_head}" placeholder="Major Head"/>
+             <input type="text" id="emails" class="swal2-input" value="${emailsString}" placeholder="Emails (comma separated)"/>`,
       focusConfirm: false,
       preConfirm: () => {
         const major_name = (
@@ -25,23 +37,29 @@ export default function MajorActions({ majorId, major }: MajorActionsProps) {
         const major_head = (
           document.getElementById("major-head") as HTMLInputElement
         )?.value;
-        const emails = (
+        const emailsInput = (
           document.getElementById("emails") as HTMLInputElement
-        )?.value
+        )?.value;
+  
+        const emails = emailsInput
           .split(",")
-          .map((email) => email.trim());
-
+          .map(email => email.trim())
+          .filter(email => email) 
+          .map(email => `"${email}"`); 
+  
         if (!major_name || !major_head || !emails.length) {
           Swal.showValidationMessage("Please fill all fields");
         }
-
-        return { major_name, major_head, emails };
+  
+        const emailsJSON = `[${emails.join(", ")}]`; 
+  
+        return { major_name, major_head, emails: emailsJSON };
       },
       showCancelButton: true,
       confirmButtonText: "Update",
       cancelButtonText: "Cancel",
     });
-
+  
     if (majorData) {
       try {
         await updateMajor({ ...major, ...majorData });
@@ -55,7 +73,7 @@ export default function MajorActions({ majorId, major }: MajorActionsProps) {
       }
     }
   };
-
+  
   const handleDeleteMajor = () => {
     Swal.fire({
       title: "Are you sure?",

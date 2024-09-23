@@ -1,36 +1,14 @@
-import Major from "@/models/major";
+import Setup from "@/models/setup";
 import Link from "next/link";
 import React from "react";
 import Button from "./Button";
-import MajorActions from "./MajorActions";
+// import SetupActions from "./SetupActions";
 
-interface MajorTableProps {
-  majors: Major[];
+interface SetupTableProps {
+  setups: Setup[];
 }
 
-export default function MajorTable({ majors }: MajorTableProps) {
-    const sortedMajors = [...majors].sort((a, b) => 
-        a.major_name.localeCompare(b.major_name)
-      );
-
-  const formatEmails = (emails: string | string[] | null) => {
-    if (!emails) return "N/A";
-
-    if (Array.isArray(emails)) {
-      return emails.join(", ");
-    }
-
-    try {
-      const parsedEmails = JSON.parse(emails);
-      if (Array.isArray(parsedEmails)) {
-        return parsedEmails.join(", ");
-      }
-    } catch {
-      return emails;
-    }
-
-    return emails;
-  };
+export default function SetupTable({ setups }: SetupTableProps) {
 
   return (
     <div className="overflow-x-auto">
@@ -41,13 +19,19 @@ export default function MajorTable({ majors }: MajorTableProps) {
               No
             </th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-              Major Name
+              Setup Name
             </th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-              Major Head
+              Semester
             </th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-              Emails
+              Major
+            </th>
+            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+              Start Date
+            </th>
+            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+              End Date
             </th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
               Action
@@ -56,25 +40,25 @@ export default function MajorTable({ majors }: MajorTableProps) {
         </thead>
 
         <tbody className="divide-y divide-gray-200 text-center">
-        {sortedMajors.map((major, index) => (
-            <tr key={major.id}>
+        {setups.map((setup, index) => (
+            <tr key={setup.id}>
               <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                 {index + 1}
               </td>
-              <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[150px]">
-                {major.major_name}
+              <td className="whitespace-nowrap px-4 py-2 text-gray-700 truncate max-w-[150px]">
+                {setup.name}
               </td>
-              <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[150px]">
-                {major.major_head || "N/A"}
+              <td className="whitespace-nowrap px-4 py-2 text-gray-700 truncate max-w-[150px]">
+                {setup.semester}
               </td>
-              <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[200px]">
-                {formatEmails(major.emails) || "N/A"}
+              <td className="whitespace-nowrap px-4 py-2 text-gray-700 truncate max-w-[200px]">
+               {setup.major_id}
               </td>
               <td className="whitespace-nowrap px-4 py-2 flex gap-2 items-center justify-center">
-                <Link href={`/admin/response/${major.slug}`}>
+                <Link href={`/admin/response/${setup.slug}`}>
                   <Button className="text-white bg-green-600">View</Button>
                 </Link>
-                <MajorActions majorId={major.id} major={major} />
+                {/* <SetupActions setupId={setup.id} major={setup} /> */}
               </td>
             </tr>
           ))}
