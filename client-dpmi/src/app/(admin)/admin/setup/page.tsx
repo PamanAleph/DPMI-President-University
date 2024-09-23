@@ -1,13 +1,18 @@
 import Button from "@/components/admin/Button";
 import SetupTable from "@/components/admin/SetupTable";
 import { fetchSetup } from "@/service/api/setup";
+import Link from "next/link";
 import React from "react";
 
 export default async function Page() {
   const setup = await fetchSetup();
   return (
-    <section className="min-h-screen">
-      <Button className="bg-green-500 text-white">Add New Major</Button>
+    <section className="space-y-4">
+      <div className="justify-end flex">
+        <Link  href="setup/create">
+          <Button className="bg-green-500 text-white">Add New Setup</Button>
+        </Link>
+      </div>
       <SetupTable setups={setup} />
     </section>
   );

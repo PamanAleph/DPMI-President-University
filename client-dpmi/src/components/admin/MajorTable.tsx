@@ -71,7 +71,7 @@ export default function MajorTable({ majors }: MajorTableProps) {
                 {formatEmails(major.emails) || "N/A"}
               </td>
               <td className="whitespace-nowrap px-4 py-2 flex gap-2 items-center justify-center">
-                <Link href={`/admin/response/${major.slug}`}>
+                <Link href={`response/${major.slug}`}>
                   <Button className="text-white bg-green-600">View</Button>
                 </Link>
                 <MajorActions majorId={major.id} major={major} />

@@ -6,7 +6,7 @@ export default async function page() {
   const majors = await fetchMajor();
 
   return (
-    <section className="space-y-4 bg-[#FBFBFB]">
+    <section className="space-y-4">
       <div className="flex justify-end">
         <CreateMajor />
       </div>

@@ -74,24 +74,38 @@ const deleteData = async (id) => {
 
 const findBySlug = async (slug) => {
   try {
-    const { data, error } = await supabase
-    .from("setup")
-    .select("*")
-    .eq("slug", slug)
-    .single();
+    const { data: setupData, error: setupError } = await supabase
+      .from("setup")
+      .select("*")
+      .eq("slug", slug)
+      .single();
 
-    if (error) {
-      console.log(error);
+    if (setupError) {
+      console.error("Error fetching setup data:", setupError);
+      return null;
     }
-    return data;
+
+    const { data: majorData, error: majorError } = await supabase
+      .from("major")
+      .select("major_name")
+      .in("id", setupData.major_id);
+
+    if (majorError) {
+      console.error("Error fetching major data:", majorError);
+      return null;
+    }
+
+    setupData.major_name = majorData.map((major) => major.major_name);
+
+    return setupData;
   } catch (err) {
-    console.log(err);
+    console.error("Internal server error:", err);
+    throw err;
   }
-}
+};
 
 const getAllDataWithMajorName = async () => {
   try {
-    // Fetch data from the setup table
     const { data: setupData, error: setupError } = await supabase
       .from("setup")
       .select("*");
@@ -101,7 +115,6 @@ const getAllDataWithMajorName = async () => {
       throw new Error("Failed to fetch setup data");
     }
 
-    // For each setup, fetch related major_name
     const setupWithMajorNames = await Promise.all(
       setupData.map(async (setup) => {
         const { data: majorData, error: majorError } = await supabase
@@ -127,7 +140,6 @@ const getAllDataWithMajorName = async () => {
     throw err;
   }
 };
-
 
 module.exports = {
   findAll,

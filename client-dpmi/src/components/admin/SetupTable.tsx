@@ -51,12 +51,13 @@ export default function SetupTable({ setups }: SetupTableProps) {
                 {setup.semester}
               </td>
               <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[200px]">
-  {setup.major_name.map((name, index) => (
-    <div key={index}>
-      {name}{index < setup.major_name.length - 1 ? ',' : ''}
-    </div>
-  ))}
-</td>
+                {setup.major_name.map((name, index) => (
+                  <div key={index}>
+                    {name}
+                    {index < setup.major_name.length - 1 ? "," : ""}
+                  </div>
+                ))}
+              </td>
 
               <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[200px]">
                 {new Date(setup.start_date).toLocaleDateString()}
@@ -64,11 +65,12 @@ export default function SetupTable({ setups }: SetupTableProps) {
               <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[200px]">
                 {new Date(setup.end_date).toLocaleDateString()}
               </td>
-              <td className="whitespace-nowrap px-4 py-2 flex gap-2 items-center justify-center">
-                <Link href={`/admin/response/${setup.slug}`}>
-                  <Button className="text-white bg-green-600">View</Button>
-                </Link>
-                {/* <SetupActions setupId={setup.id} major={setup} /> */}
+              <td className="whitespace-nowrap px-4 py-2 text-center">
+                <div className="flex gap-2 justify-center items-center">
+                  <Link href={`setup/${setup.slug}`}>
+                    <Button className="text-white bg-green-600">View</Button>
+                  </Link>
+                </div>
               </td>
             </tr>
           ))}
