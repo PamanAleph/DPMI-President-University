@@ -89,11 +89,52 @@ const findBySlug = async (slug) => {
   }
 }
 
+const getAllDataWithMajorName = async () => {
+  try {
+    // Fetch data from the setup table
+    const { data: setupData, error: setupError } = await supabase
+      .from("setup")
+      .select("*");
+
+    if (setupError) {
+      console.error("Error fetching setup data:", setupError);
+      throw new Error("Failed to fetch setup data");
+    }
+
+    // For each setup, fetch related major_name
+    const setupWithMajorNames = await Promise.all(
+      setupData.map(async (setup) => {
+        const { data: majorData, error: majorError } = await supabase
+          .from("major")
+          .select("major_name")
+          .in("id", setup.major_id);
+
+        if (majorError) {
+          console.error("Error fetching major data:", majorError);
+          throw new Error("Failed to fetch major data");
+        }
+
+        return {
+          ...setup,
+          major_name: majorData.map((major) => major.major_name),
+        };
+      })
+    );
+
+    return setupWithMajorNames;
+  } catch (err) {
+    console.error("Internal server error:", err);
+    throw err;
+  }
+};
+
+
 module.exports = {
   findAll,
   findById,
   createData,
   updateData,
   deleteData,
-  findBySlug
+  findBySlug,
+  getAllDataWithMajorName,
 };

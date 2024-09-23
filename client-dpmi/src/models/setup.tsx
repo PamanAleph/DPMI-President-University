@@ -7,6 +7,7 @@ interface Setup {
     start_date: Date;
     end_date: Date;
     create_at: Date;
+    major_name: string[];
 }
 
 export default Setup

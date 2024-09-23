@@ -6,11 +6,9 @@ import React from "react";
 export default async function Page() {
   const setup = await fetchSetup();
   return (
-    <section>
-      <Button className="bg-green-500 text-white">
-        Add New Major
-    </Button>
-    <SetupTable setups={setup}/>
+    <section className="min-h-screen">
+      <Button className="bg-green-500 text-white">Add New Major</Button>
+      <SetupTable setups={setup} />
     </section>
   );
 }

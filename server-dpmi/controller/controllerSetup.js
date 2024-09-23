@@ -1,8 +1,16 @@
-const { findAll, findById, createData, updateData, deleteData,  findBySlug} = require("../service/serviceSetup");
+const {
+  findById,
+  createData,
+  updateData,
+  deleteData,
+  findBySlug,
+  getAllDataWithMajorName,
+} = require("../service/serviceSetup");
 
 const getAllData = async (req, res) => {
   try {
-    const data = await findAll();
+    const data = await getAllDataWithMajorName();
+
     res.json({
       response: {
         status: "success",
@@ -126,8 +134,8 @@ const deleteExistingData = async (req, res) => {
   }
 };
 
-const getMajorBySlug = async (req, res) =>{
-  const {slug} = req.params;
+const getSetupBySlug = async (req, res) => {
+  const { slug } = req.params;
   try {
     const data = await findBySlug(slug);
     if (!data) {
@@ -157,6 +165,16 @@ const getMajorBySlug = async (req, res) =>{
       data: null,
     });
   }
-}
+};
 
-module.exports = { getAllData, getDataById, createNewData, updateExistingData, deleteExistingData, getMajorBySlug};
+
+
+
+module.exports = {
+  getAllData,
+  getDataById,
+  createNewData,
+  updateExistingData,
+  deleteExistingData,
+  getSetupBySlug,
+};
