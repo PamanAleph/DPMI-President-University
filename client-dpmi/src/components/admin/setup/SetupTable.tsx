@@ -1,8 +1,8 @@
 import Setup from "@/models/setup";
 import Link from "next/link";
 import React from "react";
-import Button from "./Button";
-// import SetupActions from "./SetupActions";
+import Button from "../Button";
+
 
 interface SetupTableProps {
   setups: Setup[];
@@ -70,6 +70,7 @@ export default function SetupTable({ setups }: SetupTableProps) {
                   <Link href={`setup/${setup.slug}`}>
                     <Button className="text-white bg-green-600">View</Button>
                   </Link>
+                  {/* <SetupActions setupId={setup.id} setup={setup}/> */}
                 </div>
               </td>
             </tr>

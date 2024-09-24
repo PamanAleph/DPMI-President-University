@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const routerMajor = require("./routes/majorRoute");
-const routerSetup = require("./routes/setupRoutes")
+const routerSetup = require("./routes/setupRoute")
 
 app.use("/api/v1/major", routerMajor);
 app.use("/api/v1/setup", routerSetup);

@@ -1,7 +1,7 @@
 import Major from "@/models/major";
 import Link from "next/link";
 import React from "react";
-import Button from "./Button";
+import Button from "../Button";
 import MajorActions from "./MajorActions";
 
 interface MajorTableProps {

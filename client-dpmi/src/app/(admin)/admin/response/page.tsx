@@ -1,6 +1,6 @@
 import { fetchMajor } from "@/service/api/major";
-import CreateMajor from "./_components/CreateMajor";
-import MajorTable from "@/components/admin/MajorTable";
+import CreateMajor from "@/components/admin/response/CreateMajor";
+import MajorTable from "@/components/admin/response/MajorTable";
 
 export default async function page() {
   const majors = await fetchMajor();

@@ -1,5 +1,5 @@
 import Button from "@/components/admin/Button";
-import SetupTable from "@/components/admin/SetupTable";
+import SetupTable from "@/components/admin/setup/SetupTable";
 import { fetchSetup } from "@/service/api/setup";
 import Link from "next/link";
 import React from "react";

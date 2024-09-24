@@ -11,27 +11,7 @@ import Image from "next/image";
 import React, { Fragment, useEffect, useState } from "react";
 import PULOGO from "@/assets/pu_logo.jpg";
 
-interface NavigationItem {
-  name: string;
-  href: string;
-  icon: any;
-  // icon: React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
-}
-
-interface Team {
-  name: string;
-  href: string;
-  current: boolean;
-  initial: string;
-}
-
-interface LayoutClientDashboardProps {
-  teams: Team[];
-}
-
-export default function LayoutClientDashboard({
-  teams,
-}: LayoutClientDashboardProps) {
+export default function LayoutClientDashboard() {
   const dashboardContext = useAdminDashboardContext();
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -118,7 +98,7 @@ export default function LayoutClientDashboard({
                       alt="Your Company"
                     />
                   </div>
-                  <Sidebar teams={teams} />
+                  <Sidebar />
                 </div>
               </DialogPanel>
             </TransitionChild>

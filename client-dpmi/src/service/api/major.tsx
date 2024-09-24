@@ -3,7 +3,6 @@ import { API_MAJOR } from "@/config/config";
 import Major from "@/models/major";
 
 
-// Fetch data function
 export const fetchMajor = async (): Promise<Major[]> => {
   try {
     const response = await axios.get<{ data: Major[] }>(`${API_MAJOR}`);

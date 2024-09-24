@@ -1,7 +1,7 @@
 "use client";
 import Major from "@/models/major";
 import Swal from "sweetalert2";
-import Button from "./Button";
+import Button from "../Button";
 import React from "react";
 import { deleteMajor, updateMajor } from "@/service/api/major";
 
