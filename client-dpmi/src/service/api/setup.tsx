@@ -14,7 +14,7 @@ export const fetchSetup = async (): Promise<Setup[]> => {
 };
 
 export const createSetup = async (
-  setupData: Omit<Setup, "id" | "created_at">
+  setupData: Omit<Setup, "id" | "create_at" | "major_name">
 ): Promise<Setup[]> => {
   try {
     const response = await axios.post<{ data: Setup[] }>(
@@ -64,7 +64,9 @@ export const deleteSetup = async (setupId: number): Promise<Setup[]> => {
 
 export const fetchSetupById = async (setupId: number): Promise<Setup> => {
   try {
-    const response = await axios.get<{ data: Setup }>(`${API_SETUP}/setup/${setupId}`);
+    const response = await axios.get<{ data: Setup }>(
+      `${API_SETUP}/setup/${setupId}`
+    );
     return response.data.data;
   } catch (error) {
     console.error("Error fetching setup by id:", error);
