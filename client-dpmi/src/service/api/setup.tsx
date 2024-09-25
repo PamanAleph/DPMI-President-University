@@ -14,7 +14,7 @@ export const fetchSetup = async (): Promise<Setup[]> => {
 };
 
 export const createSetup = async (
-  setupData: Omit<Setup, "id" | "create_at" | "major_name">
+  setupData: Omit<Setup, "id" | "create_at" | "major_name" | "sections">
 ): Promise<Setup[]> => {
   try {
     const response = await axios.post<{ data: Setup[] }>(

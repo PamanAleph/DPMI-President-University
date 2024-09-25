@@ -1,54 +1,89 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import { createQuestion } from "@/service/api/questions"; 
-import { getSections as fetchSections } from "@/service/api/section"; 
-import Sections from "@/models/section";
-import Select from "react-select"; 
+import { createQuestion } from "@/service/api/questions";
+import Select from "react-select";
+import Button from "../../Button";
+import { fetchSetup } from "@/service/api/setup";
 
 export default function QuestionDetails() {
-  const [questions, setQuestions] = useState<{ id: number; question_data: string; question_type: string; sequence: number; parent_id: number | null; section_id: number | null }[]>([
-    { id: Date.now(), question_data: "", question_type: "text", sequence: 1, parent_id: null, section_id: null }
+  const [questions, setQuestions] = useState<{
+    question_data: string;
+    question_type: string;
+    sequence: number;
+    parent_id: number | null;
+    section_id: number | null;
+  }[]>([
+    {
+      question_data: "",
+      question_type: "text",
+      sequence: 1,
+      parent_id: null,
+      section_id: null,
+    },
   ]);
-  const [sections, setSections] = useState<Sections[]>([]); 
+
+  const [sections, setSections] = useState<
+    { id: number; section_name: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadSections() {
+    async function loadLatestSetup() {
       try {
-        const fetchedSections = await fetchSections();
-        if (Array.isArray(fetchedSections)) {
-          setSections(fetchedSections); 
+        const fetchedSetups = await fetchSetup();
+        if (Array.isArray(fetchedSetups) && fetchedSetups.length > 0) {
+          const latestSetup = fetchedSetups[fetchedSetups.length - 1];
+          if (latestSetup.sections) {
+            setSections(latestSetup.sections);
+          }
         } else {
-          throw new Error("Fetched data is not an array.");
+          throw new Error("No setups found.");
         }
       } catch (error) {
-        console.error("Failed to fetch sections:", error);
+        console.error("Failed to fetch latest setup:", error);
         setError("Failed to load sections.");
       } finally {
         setLoading(false);
       }
     }
 
-    loadSections();
+    loadLatestSetup();
   }, []);
 
-  const handleQuestionChange = (index: number, event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleQuestionChange = (
+    index: number,
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const newQuestions = [...questions];
-    const fieldName = event.target.name as keyof typeof questions[0];
+    const fieldName = event.target.name as keyof (typeof questions)[0];
     newQuestions[index][fieldName] = event.target.value as never;
     setQuestions(newQuestions);
   };
 
-  const handleSectionChange = (index: number, selectedOption: { value: number; label: string } | null) => {
+  const handleSectionChange = (
+    index: number,
+    selectedOption: { value: number; label: string } | null
+  ) => {
     const newQuestions = [...questions];
-    newQuestions[index].section_id = selectedOption ? selectedOption.value : null; 
+    newQuestions[index].section_id = selectedOption
+      ? selectedOption.value
+      : null;
     setQuestions(newQuestions);
   };
 
   const addQuestion = () => {
-    setQuestions([...questions, { id: Date.now(), question_data: "", question_type: "text", sequence: questions.length + 1, parent_id: null, section_id: null }]);
+    setQuestions([
+      ...questions,
+      {
+        question_data: "",
+        question_type: "text",
+        sequence: questions.length + 1, 
+        parent_id: null,
+        section_id: null,
+      },
+    ]);
   };
 
   const removeQuestion = (index: number) => {
@@ -60,28 +95,40 @@ export default function QuestionDetails() {
     e.preventDefault();
 
     try {
-        const questionsData = questions.map(({ ...rest }) => ({
-            ...rest,
-        }));
+      const questionsData = questions.map(({ ...rest }) => ({
+        ...rest,
+      }));
 
-        await Promise.all(questionsData.map(createQuestion));
-        Swal.fire("Success", "Questions added successfully!", "success");
-        setQuestions([{ id: Date.now(), question_data: "", question_type: "text", sequence: 1, parent_id: null, section_id: null }]); // Reset form
+      await Promise.all(
+        questionsData.map((question) => createQuestion(question))
+      );
+      Swal.fire("Success", "Questions added successfully!", "success");
+      setQuestions([
+        {
+          question_data: "",
+          question_type: "text",
+          sequence: 1,
+          parent_id: null,
+          section_id: null,
+        },
+      ]);
     } catch (error) {
-        console.error("Failed to create questions:", error);
-        Swal.fire("Error", "Failed to add questions!", "error");
+      console.error("Failed to create questions:", error);
+      Swal.fire("Error", "Failed to add questions!", "error");
     }
-};
+  };
 
-
-  const sectionOptions = sections.map(section => ({
+  // Map sections to options for the Select component
+  const sectionOptions = sections.map((section) => ({
     value: section.id,
-    label: section.section_name
+    label: section.section_name,
   }));
 
   return (
     <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">Question Details</h2>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+        Question Details
+      </h2>
       {loading ? (
         <p>Loading sections...</p>
       ) : error ? (
@@ -120,15 +167,9 @@ export default function QuestionDetails() {
                 <option value="radio">Radio</option>
                 <option value="checkbox">Checkbox</option>
               </select>
-              <input
-                type="number"
-                name="sequence"
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Sequence"
-                value={question.sequence}
-                onChange={(e) => handleQuestionChange(index, e)}
-                required
-              />
+              <p className="border border-gray-300 rounded-md p-2">
+                Sequence: {index + 1}
+              </p>
               <select
                 name="parent_id"
                 value={question.parent_id || ""}
@@ -137,7 +178,7 @@ export default function QuestionDetails() {
               >
                 <option value="">No Parent</option>
                 {questions.map((q, i) => (
-                  <option key={i} value={q.id}>
+                  <option key={i} value={i}>
                     Question {i + 1}
                   </option>
                 ))}
@@ -154,19 +195,19 @@ export default function QuestionDetails() {
             </div>
           ))}
           <div className="flex items-center space-x-4">
-            <button
+            <Button
               type="button"
               onClick={addQuestion}
               className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
             >
               Add Another Question
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
             >
               Submit
-            </button>
+            </Button>
           </div>
         </form>
       )}

@@ -1,11 +1,10 @@
 interface Questions{
     id: number;
-    setup_id: number;
-    section_id: number;
-    parent_id: number;
+    question_data: string;
     question_type: string;
-    question_date: string;
-    sequence: number
+    sequence: number;
+    parent_id: number | null;
+    section_id: number | null;
 }
 
 export default Questions

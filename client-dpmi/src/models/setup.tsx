@@ -1,3 +1,5 @@
+import Sections from "./section";
+
 interface Setup {
     id: number;
     name: string;
@@ -8,6 +10,7 @@ interface Setup {
     end_date: Date;
     create_at: Date;
     major_name: string[];
+    sections: Sections[];
 }
 
 export default Setup

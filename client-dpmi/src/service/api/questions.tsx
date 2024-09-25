@@ -1,4 +1,5 @@
 import { API_QUESTION } from "@/config/config";
+import Questions from "@/models/questions";
 import axios from "axios";
 
 export const getQuestions = async () => {
@@ -19,12 +20,21 @@ export const getQuestionById = async (id: string) => {
   }
 };
 
-export const createQuestion = async (question: unknown) => {
+export const createQuestion = async (
+  questionData: Omit<Questions, "id"> 
+): Promise<Questions[]> => {
   try {
-    const response = await axios.post(API_QUESTION, question);
-    return response.data;
+    const response = await axios.post<{ data: Questions[] }>(
+      `${API_QUESTION}`,
+      questionData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data.data;
   } catch (error) {
-    console.error(error);
+    console.error("Error creating question:", error);
+    throw error;
   }
 };
 
@@ -36,3 +46,5 @@ export const updateQuestion = async (id: string, question: unknown) => {
     console.error(error);
   }
 };
+
+

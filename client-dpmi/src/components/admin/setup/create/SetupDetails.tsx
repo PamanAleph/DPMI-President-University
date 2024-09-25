@@ -16,11 +16,11 @@ interface MajorOption {
   label: string;
 }
 
-// interface SetupDetailsProps {
-//   onNext: () => void;
-// }
+interface SetupDetailsProps {
+  onNext: () => void;
+}
 
-export default function SetupDetails() {
+export default function SetupDetails({onNext}:SetupDetailsProps) {
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -94,7 +94,7 @@ export default function SetupDetails() {
     }
 
     try {
-      const setupData: Omit<Setup, "id" | "create_at" | "major_name"> = {
+      const setupData: Omit<Setup, "id" | "create_at" | "major_name" | "sections"> = {
         name: formData.name,
         slug: formData.slug,
         semester: Number(formData.semester),
@@ -111,6 +111,8 @@ export default function SetupDetails() {
         icon: "success",
         confirmButtonText: "OK",
       });
+
+      onNext();
 
     } catch (error) {
       setErrorMessage("Failed to create setup. Please try again.");
@@ -174,6 +176,8 @@ export default function SetupDetails() {
           </label>
           <Select
             isMulti
+            isClearable
+            isSearchable
             options={majorOptions}
             onChange={handleMajorSelect}
             placeholder="Select majors"

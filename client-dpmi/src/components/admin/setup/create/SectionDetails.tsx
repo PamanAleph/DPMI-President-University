@@ -5,7 +5,12 @@ import { fetchSetup } from "@/service/api/setup";
 import { createSection } from "@/service/api/section";
 import Button from "../../Button";
 
-export default function SectionDetails() {
+
+interface SectionDetailsProps {
+  onNext: () => void;
+}
+
+export default function SectionDetails({onNext}:SectionDetailsProps) {
   const [sections, setSections] = useState([{ section_name: "" }]);
   const [setupId, setSetupId] = useState<number | null>(null);
 
@@ -59,7 +64,7 @@ export default function SectionDetails() {
       await createSection(sectionsData);
       Swal.fire("Success", "Sections added successfully!", "success");
       setSections([{ section_name: "" }]);
-
+      onNext();
     } catch (error) {
       console.error("Failed to create sections:", error);
       Swal.fire("Error", "Failed to add sections!", "error");
