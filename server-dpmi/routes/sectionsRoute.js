@@ -1,11 +1,12 @@
 const router = require("express").Router();
-const { getAllData, getDataById, createNewData, updateExistingData, deleteExistingData, getMajorBySlug } = require("../controller/controllerSetup");
+const { getSectionsBySlug } = require("../controller/controllerSections");
+const { getAllData, getDataById, createNewData, updateExistingData, deleteExistingData } = require("../controller/controllerSetup");
 
 router.get("/", getAllData);
 router.get("/id/:id", getDataById);
 router.post("/", createNewData);
 router.put("/:id", updateExistingData);
 router.delete("/:id", deleteExistingData);
-router.get("/:slug", getMajorBySlug);
+router.get("/:slug", getSectionsBySlug);
 
 module.exports = router;

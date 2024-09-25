@@ -1,4 +1,10 @@
-const { findAll, findById, createData, updateData, deleteData,  findBySlug} = require("../service/serviceSetup");
+const {
+  findAll,
+  findById,
+  createData,
+  updateData,
+  deleteData,
+} = require("../service/serviceQuestions");
 
 const getAllData = async (req, res) => {
   try {
@@ -79,10 +85,19 @@ const createNewData = async (req, res) => {
   }
 };
 
-const updateExistingData = async (req, res) => {
+const updateDataById = async (req, res) => {
   const { id } = req.params;
   try {
     const data = await updateData(id, req.body);
+    if (!data) {
+      return res.status(404).json({
+        response: {
+          status: "error",
+          message: "Data not found",
+        },
+        data: null,
+      });
+    }
     res.json({
       response: {
         status: "success",
@@ -103,33 +118,10 @@ const updateExistingData = async (req, res) => {
   }
 };
 
-const deleteExistingData = async (req, res) => {
+const deleteDataById = async (req, res) => {
   const { id } = req.params;
   try {
-    await deleteData(id);
-    res.json({
-      response: {
-        status: "success",
-        message: "Data deleted successfully",
-      },
-    });
-  } catch (err) {
-    console.error("Internal server error:", err);
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
-  }
-};
-
-const getSectionsBySlug = async (req, res) =>{
-  const {slug} = req.params;
-  try {
-    const data = await findBySlug(slug);
+    const data = await deleteData(id);
     if (!data) {
       return res.status(404).json({
         response: {
@@ -142,7 +134,7 @@ const getSectionsBySlug = async (req, res) =>{
     res.json({
       response: {
         status: "success",
-        message: "Data fetched successfully",
+        message: "Data deleted successfully",
       },
       data: data,
     });
@@ -157,6 +149,12 @@ const getSectionsBySlug = async (req, res) =>{
       data: null,
     });
   }
-}
+};
 
-module.exports = { getAllData, getDataById, createNewData, updateExistingData, deleteExistingData, getSectionsBySlug};
+module.exports = {
+  getAllData,
+  getDataById,
+  createNewData,
+  updateDataById,
+  deleteDataById,
+};

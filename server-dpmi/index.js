@@ -9,10 +9,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const routerMajor = require("./routes/majorRoute");
-const routerSetup = require("./routes/setupRoute")
+const routerSetup = require("./routes/setupRoute");
+const routerSections = require("./routes/sectionsRoute")
+const routerQuestions = require("./routes/questionRoute");
 
 app.use("/api/v1/major", routerMajor);
 app.use("/api/v1/setup", routerSetup);
+app.use("/api/v1/sections", routerSections);
+app.use("/api/v1/questions", routerQuestions);
 
 const port = process.env.PORT | 4000;
 app.listen(port, () => {
