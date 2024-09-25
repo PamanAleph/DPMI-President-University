@@ -2,7 +2,7 @@ const { supabase } = require("../common/common");
 
 const findAll = async () => {
   try {
-    const { data, error } = await supabase.from("setup").select("*");
+    const { data, error } = await supabase.from("sections").select("*");
     if (error) {
       console.log(error);
     }
@@ -15,7 +15,7 @@ const findAll = async () => {
 const findById = async (id) => {
   try {
     const { data, error } = await supabase
-      .from("setup")
+      .from("sections")
       .select("*")
       .eq("id", id)
       .single();
@@ -32,7 +32,7 @@ const findById = async (id) => {
 const createData = async (data) => {
   try {
     const { data: createdData, error } = await supabase
-      .from("setup")
+      .from("sections")
       .insert(data);
     if (error) {
       console.log(error);
@@ -46,7 +46,7 @@ const createData = async (data) => {
 const updateData = async (id, data) => {
   try {
     const { data: updatedData, error } = await supabase
-      .from("setup")
+      .from("sections")
       .update(data)
       .eq("id", id);
 
@@ -61,7 +61,7 @@ const updateData = async (id, data) => {
 
 const deleteData = async (id) => {
   try {
-    const { data, error } = await supabase.from("setup").delete().eq("id", id);
+    const { data, error } = await supabase.from("sections").delete().eq("id", id);
 
     if (error) {
       console.log(error);
@@ -75,7 +75,7 @@ const deleteData = async (id) => {
 const findBySlug = async (slug) => {
   try {
     const { data, error } = await supabase
-    .from("setup")
+    .from("sections")
     .select("*")
     .eq("slug", slug)
     .single();
