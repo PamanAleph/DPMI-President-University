@@ -66,7 +66,7 @@ export default async function SetupDetailsPage({
       </div>
 
       <div className="mt-6">
-        <Link href="admin/setup">
+        <Link href="/admin/setup">
           <Button className="bg-green-600 text-white rounded-md hover:bg-green-700">
             Back to Setup List
           </Button>{" "}

@@ -1,6 +1,11 @@
 import React from 'react'
 
-export default function QuestionDetails() {
+interface QuestionsDetailsProps {
+  onNext: () => void;
+}
+
+export default function QuestionDetails({onNext}:QuestionsDetailsProps) {
+  onNext()
   return (
     <div>QuestionDetails</div>
   )

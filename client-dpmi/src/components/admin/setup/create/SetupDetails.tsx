@@ -16,7 +16,11 @@ interface MajorOption {
   label: string;
 }
 
-export default function SetupDetails() {
+interface SetupDetailsProps {
+  onNext: () => void;
+}
+
+export default function SetupDetails({onNext}:SetupDetailsProps) {
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -47,7 +51,14 @@ export default function SetupDetails() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    if (name === "name") {
+    if (name === "semester") {
+      if (/^\d{0,5}$/.test(value)) {
+        setFormData({
+          ...formData,
+          [name]: value,
+        });
+      }
+    } else if (name === "name") {
       setFormData({
         ...formData,
         [name]: value,
@@ -76,18 +87,23 @@ export default function SetupDetails() {
     setIsSubmitting(true);
     setErrorMessage("");
 
+    if (formData.semester.length !== 5) {
+      setErrorMessage("Semester must be exactly 5 characters.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const setupData: Omit<Setup, "id" | "create_at" | "major_name"> = {
         name: formData.name,
         slug: formData.slug,
         semester: Number(formData.semester),
-        major_id: [],
+        major_id: formData.major_id,
         start_date: new Date(formData.start_date),
         end_date: new Date(formData.end_date),
       };
 
-      const result = await createSetup(setupData);
-      console.log("Setup data being sent:", setupData);
+      await createSetup(setupData);
 
       Swal.fire({
         title: "Success!",
@@ -96,7 +112,8 @@ export default function SetupDetails() {
         confirmButtonText: "OK",
       });
 
-      console.log("Setup created successfully:", result);
+      onNext();
+
     } catch (error) {
       setErrorMessage("Failed to create setup. Please try again.");
       Swal.fire({
@@ -139,16 +156,17 @@ export default function SetupDetails() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Semester:
+            Semester (e.g., 20231):
           </label>
           <input
-            type="number"
+            type="text"
             name="semester"
             value={formData.semester}
             onChange={handleChange}
             required
+            maxLength={5}
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter semester"
+            placeholder="Enter semester (5 digits)"
           />
         </div>
 
