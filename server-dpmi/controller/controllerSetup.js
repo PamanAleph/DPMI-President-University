@@ -4,12 +4,12 @@ const {
   updateData,
   deleteData,
   findBySlug,
-  getAllDataWithMajorName,
+  findAll,
 } = require("../service/serviceSetup");
 
 const getAllData = async (req, res) => {
   try {
-    const data = await getAllDataWithMajorName();
+    const data = await findAll();
 
     res.json({
       response: {

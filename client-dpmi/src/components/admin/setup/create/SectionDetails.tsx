@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { fetchSetup } from "@/service/api/setup";
 import { createSection } from "@/service/api/section";
+import Button from "../../Button";
 
 export default function SectionDetails() {
   const [sections, setSections] = useState([{ section_name: "" }]);
@@ -23,7 +24,10 @@ export default function SectionDetails() {
     getLatestSetup();
   }, []);
 
-  const handleSectionChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSectionChange = (
+    index: number,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const newSections = [...sections];
     newSections[index].section_name = event.target.value;
     setSections(newSections);
@@ -48,7 +52,7 @@ export default function SectionDetails() {
     try {
       const sectionsData = sections.map((section, index) => ({
         ...section,
-        sequence: index + 1, 
+        sequence: index + 1,
         setup_id: setupId,
       }));
 
@@ -56,7 +60,6 @@ export default function SectionDetails() {
       Swal.fire("Success", "Sections added successfully!", "success");
       setSections([{ section_name: "" }]);
 
-      console.log(sectionsData); 
     } catch (error) {
       console.error("Failed to create sections:", error);
       Swal.fire("Error", "Failed to add sections!", "error");
@@ -65,7 +68,9 @@ export default function SectionDetails() {
 
   return (
     <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">Section Details</h2>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+        Section Details
+      </h2>
       <form onSubmit={handleSubmit}>
         {sections.map((section, index) => (
           <div key={index} className="flex items-center space-x-4 mb-4">
@@ -91,19 +96,19 @@ export default function SectionDetails() {
           </div>
         ))}
         <div className="flex items-center space-x-4">
-          <button
+          <Button
             type="button"
             onClick={addSection}
-            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
+            className=" bg-green-500 text-white rounded-md hover:bg-green-600 transition"
           >
             Add Another Section
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+            className=" bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
           >
             Submit
-          </button>
+          </Button>
         </div>
       </form>
     </div>

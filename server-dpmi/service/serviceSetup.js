@@ -2,15 +2,75 @@ const { supabase } = require("../common/common");
 
 const findAll = async () => {
   try {
-    const { data, error } = await supabase.from("setup").select("*");
-    if (error) {
-      console.log(error);
+    const { data: setupData, error: setupError } = await supabase
+      .from("setup")
+      .select("*");
+
+    if (setupError) {
+      console.error("Error fetching setup data:", setupError);
+      throw new Error("Failed to fetch setup data");
     }
-    return data;
+
+    const setupWithMajorAndSections = await Promise.all(
+      setupData.map(async (setup) => {
+        const { data: majorData, error: majorError } = await supabase
+          .from("major")
+          .select("major_name")
+          .in("id", setup.major_id);
+
+        if (majorError) {
+          console.error("Error fetching major data:", majorError);
+          throw new Error("Failed to fetch major data");
+        }
+
+        const { data: sectionData, error: sectionError } = await supabase
+          .from("sections")
+          .select("id, section_name, sequence") 
+          .eq("setup_id", setup.id);
+
+        if (sectionError) {
+          console.error("Error fetching sections data:", sectionError);
+          throw new Error("Failed to fetch sections data");
+        }
+
+        const sectionsWithQuestions = await Promise.all(
+          sectionData.map(async (section) => {
+            const { data: questionData, error: questionError } = await supabase
+              .from("questions")
+              .select("id, question_type, question_data")
+              .eq("section_id", section.id); 
+
+            if (questionError) {
+              console.error("Error fetching questions data:", questionError);
+              throw new Error("Failed to fetch questions data");
+            }
+
+            return {
+              ...section,
+              questions: questionData.map((question) => ({
+                id: question.id,
+                question_type: question.question_type,
+                question_data: question.question_data,
+              })),
+            };
+          })
+        );
+
+        return {
+          ...setup,
+          major_name: majorData.map((major) => major.major_name),
+          sections: sectionsWithQuestions,
+        };
+      })
+    );
+
+    return setupWithMajorAndSections;
   } catch (err) {
     console.error("Internal server error:", err);
+    throw err;
   }
 };
+
 
 const findById = async (id) => {
   try {
@@ -97,12 +157,49 @@ const findBySlug = async (slug) => {
 
     setupData.major_name = majorData.map((major) => major.major_name);
 
-    return setupData;
+    const { data: sectionData, error: sectionError } = await supabase
+      .from("sections")
+      .select("id, section_name, sequence")
+      .eq("setup_id", setupData.id);
+
+    if (sectionError) {
+      console.error("Error fetching sections data:", sectionError);
+      return null;
+    }
+
+    const sectionsWithQuestions = await Promise.all(
+      sectionData.map(async (section) => {
+        const { data: questionData, error: questionError } = await supabase
+          .from("questions")
+          .select("id, question_type, question_data")
+          .eq("section_id", section.id); 
+
+        if (questionError) {
+          console.error("Error fetching questions data:", questionError);
+          throw new Error("Failed to fetch questions data");
+        }
+
+        return {
+          ...section,
+          questions: questionData.map((question) => ({
+            id: question.id,
+            question_type: question.question_type,
+            question_data: question.question_data,
+          })),
+        };
+      })
+    );
+
+    return {
+      ...setupData,
+      sections: sectionsWithQuestions,
+    };
   } catch (err) {
     console.error("Internal server error:", err);
     throw err;
   }
 };
+
 
 const getAllDataWithMajorName = async () => {
   try {
