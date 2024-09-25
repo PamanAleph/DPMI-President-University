@@ -8,7 +8,7 @@ const {
 } = require("../controller/controllerQuestions");
 
 router.get("/", getAllData);
-router.get("/:id", getDataById);
+router.get("/id/:id", getDataById);
 router.post("/", createNewData);
 router.put("/:id", updateDataById);
 router.delete("/:id", deleteDataById);
