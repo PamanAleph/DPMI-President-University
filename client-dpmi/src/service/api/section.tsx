@@ -1,12 +1,15 @@
 import { API_SECTION } from "@/config/config";
+import Sections from "@/models/section";
 import axios from "axios";
 
 export const getSections = async () => {
   try {
-    const response = await axios.get(API_SECTION);
-    return response.data;
+    const response = await axios.get<{ data: Sections[] }>(`${API_SECTION}`);
+    console.log(response.data.data)
+    return response.data.data;
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching setups:", error);
+    return [];
   }
 };
 

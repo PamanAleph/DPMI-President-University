@@ -16,11 +16,11 @@ interface MajorOption {
   label: string;
 }
 
-interface SetupDetailsProps {
-  onNext: () => void;
-}
+// interface SetupDetailsProps {
+//   onNext: () => void;
+// }
 
-export default function SetupDetails({onNext}:SetupDetailsProps) {
+export default function SetupDetails() {
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -111,8 +111,6 @@ export default function SetupDetails({onNext}:SetupDetailsProps) {
         icon: "success",
         confirmButtonText: "OK",
       });
-
-      onNext();
 
     } catch (error) {
       setErrorMessage("Failed to create setup. Please try again.");
