@@ -1,64 +1,27 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { fetchMajor } from "@/service/api/major";
+import React, { useState } from "react";
 import { createSetup } from "@/service/api/setup";
-import Select, { OnChangeValue } from "react-select";
 import Swal from "sweetalert2";
 import Setup from "@/models/setup";
-
-interface Major {
-  id: number;
-  major_name: string;
-}
-
-interface MajorOption {
-  value: number;
-  label: string;
-}
 
 interface SetupDetailsProps {
   onNext: () => void;
 }
 
-export default function SetupDetails({onNext}:SetupDetailsProps) {
+export default function SetupDetails({ onNext }: SetupDetailsProps) {
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
-    semester: "",
-    major_id: [] as number[],
-    start_date: "",
-    end_date: "",
     created_at: new Date().toISOString().split("T")[0],
   });
 
-  const [majors, setMajors] = useState<Major[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
-  useEffect(() => {
-    async function loadMajors() {
-      try {
-        const majorData = await fetchMajor();
-        setMajors(majorData);
-      } catch (error) {
-        console.error("Error fetching majors:", error);
-      }
-    }
-
-    loadMajors();
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    if (name === "semester") {
-      if (/^\d{0,5}$/.test(value)) {
-        setFormData({
-          ...formData,
-          [name]: value,
-        });
-      }
-    } else if (name === "name") {
+    if (name === "name") {
       setFormData({
         ...formData,
         [name]: value,
@@ -72,35 +35,14 @@ export default function SetupDetails({onNext}:SetupDetailsProps) {
     }
   };
 
-  const handleMajorSelect = (
-    selectedOptions: OnChangeValue<MajorOption, true>
-  ) => {
-    const selectedIds = selectedOptions.map((option) => option.value);
-    setFormData({
-      ...formData,
-      major_id: selectedIds,
-    });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMessage("");
-
-    if (formData.semester.length !== 5) {
-      setErrorMessage("Semester must be exactly 5 characters.");
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      const setupData: Omit<Setup, "id" | "create_at" | "major_name" | "sections"> = {
+      const setupData: Omit<Setup, "id"> = {
         name: formData.name,
         slug: formData.slug,
-        semester: Number(formData.semester),
-        major_id: formData.major_id,
-        start_date: new Date(formData.start_date),
-        end_date: new Date(formData.end_date),
       };
 
       await createSetup(setupData);
@@ -113,7 +55,6 @@ export default function SetupDetails({onNext}:SetupDetailsProps) {
       });
 
       onNext();
-
     } catch (error) {
       setErrorMessage("Failed to create setup. Please try again.");
       Swal.fire({
@@ -127,12 +68,6 @@ export default function SetupDetails({onNext}:SetupDetailsProps) {
       setIsSubmitting(false);
     }
   };
-
-  const majorOptions = majors.map((major) => ({
-    value: major.id,
-    label: major.major_name,
-  }));
-
   return (
     <div className="max-w-xl mx-auto p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-semibold text-center mb-6">
@@ -151,75 +86,6 @@ export default function SetupDetails({onNext}:SetupDetailsProps) {
             required
             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             placeholder="Enter setup name"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Semester (e.g., 20231):
-          </label>
-          <input
-            type="text"
-            name="semester"
-            value={formData.semester}
-            onChange={handleChange}
-            required
-            maxLength={5}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter semester (5 digits)"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Majors:
-          </label>
-          <Select
-            isMulti
-            isClearable
-            isSearchable
-            options={majorOptions}
-            onChange={handleMajorSelect}
-            placeholder="Select majors"
-            className="mt-1"
-            styles={{
-              control: (base) => ({
-                ...base,
-                borderColor: "#d1d5db",
-                boxShadow: "none",
-                "&:hover": {
-                  borderColor: "#3b82f6",
-                },
-              }),
-            }}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Start Date:
-          </label>
-          <input
-            type="date"
-            name="start_date"
-            value={formData.start_date}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            End Date:
-          </label>
-          <input
-            type="date"
-            name="end_date"
-            value={formData.end_date}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 

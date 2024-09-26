@@ -11,18 +11,8 @@ const findAll = async () => {
       throw new Error("Failed to fetch setup data");
     }
 
-    const setupWithMajorAndSections = await Promise.all(
+    const setupWithSections = await Promise.all(
       setupData.map(async (setup) => {
-        const { data: majorData, error: majorError } = await supabase
-          .from("major")
-          .select("major_name")
-          .in("id", setup.major_id);
-
-        if (majorError) {
-          console.error("Error fetching major data:", majorError);
-          throw new Error("Failed to fetch major data");
-        }
-
         const { data: sectionData, error: sectionError } = await supabase
           .from("sections")
           .select("id, section_name, sequence") 
@@ -38,7 +28,7 @@ const findAll = async () => {
             const { data: questionData, error: questionError } = await supabase
               .from("questions")
               .select("id, question_type, question_data")
-              .eq("section_id", section.id); 
+              .eq("section_id", section.id);
 
             if (questionError) {
               console.error("Error fetching questions data:", questionError);
@@ -58,18 +48,18 @@ const findAll = async () => {
 
         return {
           ...setup,
-          major_name: majorData.map((major) => major.major_name),
           sections: sectionsWithQuestions,
         };
       })
     );
 
-    return setupWithMajorAndSections;
+    return setupWithSections;
   } catch (err) {
     console.error("Internal server error:", err);
     throw err;
   }
 };
+
 
 
 const findById = async (id) => {

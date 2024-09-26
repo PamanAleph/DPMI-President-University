@@ -23,7 +23,6 @@ export default function MajorActions({ majorId, major }: MajorActionsProps) {
     }
   
     const emailsString = emailsArray.join(", ");
-  
     const { value: majorData } = await Swal.fire({
       title: "Edit Major",
       html: `<input type="text" id="major-name" class="swal2-input" value="${major.major_name}" placeholder="Major Name"/>
@@ -49,11 +48,14 @@ export default function MajorActions({ majorId, major }: MajorActionsProps) {
   
         if (!major_name || !major_head || !emails.length) {
           Swal.showValidationMessage("Please fill all fields");
+          return null;
         }
   
-        const emailsJSON = `[${emails.join(", ")}]`; 
-  
-        return { major_name, major_head, emails: emailsJSON };
+        const emailsJSON = `[${emails.join(", ")}]`;
+
+        const slug = major_name.toLowerCase().replace(/\s+/g, '-');
+
+        return { major_name, major_head, emails: emailsJSON, slug }; 
       },
       showCancelButton: true,
       confirmButtonText: "Update",
@@ -106,7 +108,7 @@ export default function MajorActions({ majorId, major }: MajorActionsProps) {
       </Button>
       <Button
         className="bg-red-400 text-white"
-        onClick={() => handleDeleteMajor()}
+        onClick={handleDeleteMajor}
       >
         Delete
       </Button>

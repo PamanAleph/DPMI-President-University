@@ -5,27 +5,20 @@ import { createQuestion } from "@/service/api/questions";
 import Select from "react-select";
 import Button from "../../Button";
 import { fetchSetup } from "@/service/api/setup";
+import { useRouter } from "next/navigation";
 
 export default function QuestionDetails() {
-  const [questions, setQuestions] = useState<{
-    question_data: string;
-    question_type: string;
-    sequence: number;
-    parent_id: number | null;
-    section_id: number | null;
-  }[]>([
-    {
-      question_data: "",
-      question_type: "text",
-      sequence: 1,
-      parent_id: null,
-      section_id: null,
-    },
-  ]);
+  const router = useRouter();
+  const [question, setQuestion] = useState({
+    question_data: "",
+    question_type: "text",
+    sequence: 1,
+    parent_id: null as number | null,
+    section_id: null as number | null,
+  });
 
-  const [sections, setSections] = useState<
-    { id: number; section_name: string }[]
-  >([]);
+  const [sections, setSections] = useState<{ id: number; section_name: string }[]>([]);
+  const [existingQuestions, setExistingQuestions] = useState<{ id: number; question_data: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,11 +26,22 @@ export default function QuestionDetails() {
     async function loadLatestSetup() {
       try {
         const fetchedSetups = await fetchSetup();
+        console.log("Fetched Setups:", fetchedSetups); 
+
         if (Array.isArray(fetchedSetups) && fetchedSetups.length > 0) {
           const latestSetup = fetchedSetups[fetchedSetups.length - 1];
+
           if (latestSetup.sections) {
             setSections(latestSetup.sections);
           }
+
+          const allQuestions = latestSetup.sections.flatMap(section => section.questions || []);
+          console.log("All Questions:", allQuestions); 
+
+          setExistingQuestions(allQuestions.map(q => ({
+            id: q.id,
+            question_data: q.question_data,
+          })));
         } else {
           throw new Error("No setups found.");
         }
@@ -52,77 +56,74 @@ export default function QuestionDetails() {
     loadLatestSetup();
   }, []);
 
-  const handleQuestionChange = (
-    index: number,
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const newQuestions = [...questions];
-    const fieldName = event.target.name as keyof (typeof questions)[0];
-    newQuestions[index][fieldName] = event.target.value as never;
-    setQuestions(newQuestions);
+  const handleQuestionChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = event.target;
+    setQuestion(prevQuestion => ({
+      ...prevQuestion,
+      [name]: value,
+    }));
   };
 
-  const handleSectionChange = (
-    index: number,
-    selectedOption: { value: number; label: string } | null
-  ) => {
-    const newQuestions = [...questions];
-    newQuestions[index].section_id = selectedOption
-      ? selectedOption.value
-      : null;
-    setQuestions(newQuestions);
+  const handleSectionChange = (selectedOption: { value: number; label: string } | null) => {
+    setQuestion(prevQuestion => ({
+      ...prevQuestion,
+      section_id: selectedOption ? selectedOption.value : null,
+    }));
   };
 
-  const addQuestion = () => {
-    setQuestions([
-      ...questions,
-      {
-        question_data: "",
-        question_type: "text",
-        sequence: questions.length + 1, 
-        parent_id: null,
-        section_id: null,
-      },
-    ]);
-  };
-
-  const removeQuestion = (index: number) => {
-    const newQuestions = questions.filter((_, i) => i !== index);
-    setQuestions(newQuestions);
+  const handleParentChange = (selectedOption: { value: number | null; label: string } | null) => {
+    setQuestion(prevQuestion => ({
+      ...prevQuestion,
+      parent_id: selectedOption ? selectedOption.value : null,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      const questionsData = questions.map(({ ...rest }) => ({
-        ...rest,
-      }));
-
-      await Promise.all(
-        questionsData.map((question) => createQuestion(question))
-      );
-      Swal.fire("Success", "Questions added successfully!", "success");
-      setQuestions([
-        {
-          question_data: "",
-          question_type: "text",
-          sequence: 1,
-          parent_id: null,
-          section_id: null,
-        },
-      ]);
+      await createQuestion(question);
+      Swal.fire("Success", "Question added successfully!", "success");
+      setQuestion({
+        question_data: "",
+        question_type: "text",
+        sequence: question.sequence + 1,
+        parent_id: null,
+        section_id: null,
+      });
     } catch (error) {
-      console.error("Failed to create questions:", error);
-      Swal.fire("Error", "Failed to add questions!", "error");
+      console.error("Failed to create question:", error);
+      Swal.fire("Error", "Failed to add question!", "error");
     }
   };
 
-  // Map sections to options for the Select component
-  const sectionOptions = sections.map((section) => ({
+  const handleEndQuestions = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to end adding questions?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, end it!",
+    }).then(result => {
+      if (result.isConfirmed) {
+        Swal.fire("Ended!", "Question session has ended.", "success");
+        router.push("/admin/setup"); 
+      }
+    });
+  };
+
+  const sectionOptions = sections.map(section => ({
     value: section.id,
     label: section.section_name,
   }));
+
+  const parentOptions = [
+    { value: null, label: "No Parent" },
+    ...existingQuestions.map(q => ({
+      value: q.id,
+      label: q.question_data,
+    })),
+  ];
+  console.log("Parent Options:", parentOptions);
 
   return (
     <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6">
@@ -135,78 +136,62 @@ export default function QuestionDetails() {
         <p className="text-red-500">{error}</p>
       ) : (
         <form onSubmit={handleSubmit}>
-          {questions.map((question, index) => (
-            <div key={index} className="flex flex-col space-y-4 mb-4">
-              <Select
-                name="section_id"
-                options={sectionOptions}
-                onChange={(option) => handleSectionChange(index, option)}
-                className="mb-2"
-                placeholder="Select Section"
-                required
-              />
-              <input
-                type="text"
-                name="question_data"
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder={`Question ${index + 1}`}
-                value={question.question_data}
-                onChange={(e) => handleQuestionChange(index, e)}
-                required
-              />
-              <select
-                name="question_type"
-                value={question.question_type}
-                onChange={(e) => handleQuestionChange(index, e)}
-                className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="text">Text</option>
-                <option value="number">Number</option>
-                <option value="email">Email</option>
-                <option value="radio">Radio</option>
-                <option value="checkbox">Checkbox</option>
-              </select>
-              <p className="border border-gray-300 rounded-md p-2">
-                Sequence: {index + 1}
-              </p>
-              <select
-                name="parent_id"
-                value={question.parent_id || ""}
-                onChange={(e) => handleQuestionChange(index, e)}
-                className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">No Parent</option>
-                {questions.map((q, i) => (
-                  <option key={i} value={i}>
-                    Question {i + 1}
-                  </option>
-                ))}
-              </select>
-              {questions.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeQuestion(index)}
-                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          ))}
+          <div className="flex flex-col space-y-4 mb-4">
+            <Select
+              name="section_id"
+              options={sectionOptions}
+              onChange={handleSectionChange}
+              className="mb-2"
+              placeholder="Select Section"
+              required
+            />
+            <input
+              type="text"
+              name="question_data"
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter question"
+              value={question.question_data}
+              onChange={handleQuestionChange}
+              required
+            />
+            <select
+              name="question_type"
+              value={question.question_type}
+              onChange={handleQuestionChange}
+              className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="text">Text</option>
+              <option value="number">Number</option>
+              <option value="email">Email</option>
+              <option value="radio">Radio</option>
+              <option value="checkbox">Checkbox</option>
+            </select>
+            <p className="border border-gray-300 rounded-md p-2">
+              Sequence: {question.sequence}
+            </p>
+            <Select
+              name="parent_id"
+              options={parentOptions}
+              onChange={handleParentChange}
+              className="mb-2"
+              placeholder="Select Parent Question (optional)"
+              value={parentOptions.find(option => option.value === question.parent_id) || null}
+            />
+          </div>
           <div className="flex items-center space-x-4">
             <Button
-              type="button"
-              onClick={addQuestion}
+              type="submit"
               className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
             >
-              Add Another Question
+              Submit Question
             </Button>
             <Button
-              type="submit"
+              type="button"
+              onClick={handleEndQuestions}
               className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
             >
-              Submit
+              End Questions
             </Button>
           </div>
         </form>
