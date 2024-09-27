@@ -26,8 +26,6 @@ export default function QuestionDetails() {
     async function loadLatestSetup() {
       try {
         const fetchedSetups = await fetchSetupDetails();
-        console.log("Fetched Setups:", fetchedSetups); 
-
         if (Array.isArray(fetchedSetups) && fetchedSetups.length > 0) {
           const latestSetup = fetchedSetups[fetchedSetups.length - 1];
 
@@ -64,11 +62,13 @@ export default function QuestionDetails() {
     }));
   };
 
-  const handleSectionChange = (selectedOption: { value: number; label: string } | null) => {
-    setQuestion(prevQuestion => ({
-      ...prevQuestion,
-      section_id: selectedOption ? selectedOption.value : null,
-    }));
+  const handleSectionChange = (selectedOption: { value: number | null; label: string } | null) => {
+    if (selectedOption && selectedOption.value !== question.section_id) {
+      setQuestion({
+        ...question,
+        section_id: selectedOption.value,
+      });
+    }
   };
 
   const handleParentChange = (selectedOption: { value: number | null; label: string } | null) => {
@@ -88,7 +88,7 @@ export default function QuestionDetails() {
         question_type: "text",
         sequence: question.sequence + 1,
         parent_id: null,
-        section_id: null,
+        section_id: question.section_id,
       });
     } catch (error) {
       console.error("Failed to create question:", error);
@@ -141,6 +141,7 @@ export default function QuestionDetails() {
               name="section_id"
               options={sectionOptions}
               onChange={handleSectionChange}
+              value={sectionOptions.find(option => option.value === question.section_id)}
               className="mb-2"
               placeholder="Select Section"
               required
