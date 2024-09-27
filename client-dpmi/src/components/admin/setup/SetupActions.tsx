@@ -174,25 +174,28 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
     });
 
     if (formValues) {
-      
       const majorIds = Array.isArray(formValues.majorIds)
         ? formValues.majorIds
         : [];
-        console.log('Form Values:', { majorIds, semester: formValues.semester, end_date: formValues.end_date })
+      console.log("Form Values:", {
+        majorIds,
+        semester: formValues.semester,
+        end_date: formValues.end_date,
+      });
       try {
         const evaluationCheckData = {
           setupId,
           majorIds,
           semester: formValues.semester,
-          endDate: formValues.end_date, 
+          endDate: formValues.end_date,
         };
         const evaluationExists = await checkEvaluation(evaluationCheckData);
 
         if (evaluationExists) {
           Swal.fire(
-            "Warning",
+            "Error",
             "An evaluation for the selected majors, semester, and end date already exists.",
-            "warning"
+            "error"
           );
           return;
         }
@@ -212,13 +215,23 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
           window.location.reload();
         });
       } catch (error: unknown) {
-        const errorMessage =
-          error instanceof Error ? error.message : "An unknown error occurred";
-        Swal.fire(
-          "Error",
-          `Failed to generate the evaluation: ${errorMessage}`,
-          "error"
-        );
+        if (error instanceof Error && error.message.includes("409")) {
+          Swal.fire(
+            "Error",
+            "An evaluation for the selected majors, semester, and end date already exists.",
+            "error"
+          );
+        } else {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred";
+          Swal.fire(
+            "Error",
+            `Failed to generate the evaluation: ${errorMessage}`,
+            "error"
+          );
+        }
       }
     }
   };

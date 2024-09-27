@@ -165,12 +165,23 @@ const checkingExistingEvaluation = async (req, res) => {
       semester,
       endDate
     );
+
+    if (dataExists) {
+      return res.status(409).json({
+        response: {
+          status: "error",
+          message: "An evaluation with the exact same content already exists.",
+        },
+        data: null,
+      });
+    }
+
     res.json({
       response: {
         status: "success",
         message: "Data existence check completed successfully",
       },
-      data: { exists: dataExists }, 
+      data: false,
     });
   } catch (err) {
     console.error("Internal server error:", err);

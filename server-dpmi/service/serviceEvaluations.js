@@ -110,12 +110,7 @@ const deleteData = async (id) => {
   }
 };
 
-const checkExistingEvaluation = async (
-  setupId,
-  majorIds,
-  semester,
-  endDate
-) => {
+const checkExistingEvaluation = async (setupId, majorIds, semester, endDate) => {
   if (!Array.isArray(majorIds) || majorIds.length === 0) {
     throw new Error("Invalid majorIds");
   }
@@ -132,9 +127,17 @@ const checkExistingEvaluation = async (
     throw new Error(error.message);
   }
 
-  return data.length > 0;
-};
+  const existingEvaluation = data.find((evaluation) => {
+    return (
+      evaluation.setup_id === setupId &&
+      JSON.stringify(evaluation.major_id) === JSON.stringify(majorIds) &&
+      evaluation.semester === semester &&
+      evaluation.end_date === endDate
+    );
+  });
 
+  return existingEvaluation !== undefined;
+};
 module.exports = {
   findAll,
   findById,
