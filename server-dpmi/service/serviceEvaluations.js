@@ -110,4 +110,36 @@ const deleteData = async (id) => {
   }
 };
 
-module.exports = { findAll, findById, createData, updateData, deleteData };
+const checkExistingEvaluation = async (
+  setupId,
+  majorIds,
+  semester,
+  endDate
+) => {
+  if (!Array.isArray(majorIds) || majorIds.length === 0) {
+    throw new Error("Invalid majorIds");
+  }
+
+  const { data, error } = await supabase
+    .from("evaluations")
+    .select("*")
+    .eq("setup_id", setupId)
+    .eq("semester", semester)
+    .eq("end_date", endDate)
+    .contains("major_id", majorIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data.length > 0;
+};
+
+module.exports = {
+  findAll,
+  findById,
+  createData,
+  updateData,
+  deleteData,
+  checkExistingEvaluation,
+};

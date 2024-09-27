@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import Button from "../Button";
 import Setup from "@/models/setup";
 import { deleteSetup, updateSetupNameAndSlug } from "@/service/api/setup";
-import { createEvaluation } from "@/service/api/evaluation";
+import { checkEvaluation, createEvaluation } from "@/service/api/evaluation";
 import { fetchMajor } from "@/service/api/major"; // Import fetchMajor API
 import Link from "next/link";
 import Select from "react-select"; // Import React Select
@@ -125,7 +125,6 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
       focusConfirm: false,
       preConfirm: () => {
         const majorIds = selectedMajors.map((major) => major.value);
-
         const semester = (
           document.getElementById("semester") as HTMLInputElement
         )?.value;
@@ -175,13 +174,36 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
     });
 
     if (formValues) {
+      
+      const majorIds = Array.isArray(formValues.majorIds)
+        ? formValues.majorIds
+        : [];
+        console.log('Form Values:', { majorIds, semester: formValues.semester, end_date: formValues.end_date })
       try {
+        const evaluationCheckData = {
+          setupId,
+          majorIds,
+          semester: formValues.semester,
+          endDate: formValues.end_date, 
+        };
+        const evaluationExists = await checkEvaluation(evaluationCheckData);
+
+        if (evaluationExists) {
+          Swal.fire(
+            "Warning",
+            "An evaluation for the selected majors, semester, and end date already exists.",
+            "warning"
+          );
+          return;
+        }
+
         await createEvaluation({
           setup_id: setupId,
           major_id: formValues.majorIds,
           semester: formValues.semester,
           end_date: new Date(formValues.end_date),
         });
+
         Swal.fire(
           "Success!",
           "The evaluation has been generated successfully.",
@@ -200,6 +222,7 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
       }
     }
   };
+
   return (
     <section className="flex gap-4 justify-center">
       <Button

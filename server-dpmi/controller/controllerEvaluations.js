@@ -4,6 +4,7 @@ const {
   createData,
   updateData,
   deleteData,
+  checkExistingEvaluation,
 } = require("../service/serviceEvaluations");
 
 const getAllData = async (req, res) => {
@@ -122,26 +123,55 @@ const updateExistingData = async (req, res) => {
 };
 
 const deleteDataById = async (req, res) => {
+  const { id } = req.params;
   try {
-    const id = req.params.id;
-    const deletedData = await deleteData(id);
-    if (!deletedData) {
-      res.status(404).json({
-        response: {
-          status: "error",
-          message: "Data not found",
-        },
-        data: null,
-      });
-    } else {
-      res.json({
-        response: {
-          status: "success",
-          message: "Data deleted successfully",
-        },
-        data: null,
-      });
-    }
+    await deleteData(id);
+    res.json({
+      response: {
+        status: "success",
+        message: "Data deleted successfully",
+      },
+    });
+  } catch (err) {
+    console.error("Internal server error:", err);
+    res.status(500).json({
+      response: {
+        status: "error",
+        message: "Internal server error",
+        details: err.message,
+      },
+      data: null,
+    });
+  }
+};
+
+const checkingExistingEvaluation = async (req, res) => {
+  const { setupId, majorIds, semester, endDate } = req.body;
+
+  if (!Array.isArray(majorIds) || majorIds.length === 0) {
+    return res.status(400).json({
+      response: {
+        status: "error",
+        message: "majorIds must be a non-empty array.",
+      },
+      data: null,
+    });
+  }
+
+  try {
+    const dataExists = await checkExistingEvaluation(
+      setupId,
+      majorIds,
+      semester,
+      endDate
+    );
+    res.json({
+      response: {
+        status: "success",
+        message: "Data existence check completed successfully",
+      },
+      data: { exists: dataExists }, 
+    });
   } catch (err) {
     console.error("Internal server error:", err);
     res.status(500).json({
@@ -161,4 +191,5 @@ module.exports = {
   createNewData,
   updateExistingData,
   deleteDataById,
+  checkingExistingEvaluation,
 };

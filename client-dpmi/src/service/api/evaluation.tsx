@@ -59,7 +59,33 @@ export const deleteEvaluation = async (
     );
     return response.data.data;
   } catch (error) {
-    console.error("Error deleting evaluation:", error);
+    console.error("Error deleting major:", error);
+    throw error;
+  }
+};
+
+export const checkEvaluation = async ({
+  setupId,
+  majorIds,
+  semester,
+  endDate,
+}: {
+  setupId: number;
+  majorIds: number[];
+  semester: string;
+  endDate: Date;
+}): Promise<boolean> => {
+  try {
+    const response = await axios.post<{ data: boolean }>(
+      `${API_EVALUATION}/check`,
+      { setupId, majorIds, semester, endDate },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data.data; 
+  } catch (error) {
+    console.error("Error checking evaluation:", error);
     throw error;
   }
 };
