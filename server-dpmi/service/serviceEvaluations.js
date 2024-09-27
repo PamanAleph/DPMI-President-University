@@ -1,4 +1,5 @@
 const { supabase } = require("../common/common");
+const { findAllSetup, findSetupById } = require("./serviceSetup");
 
 const findAll = async () => {
   try {
@@ -49,16 +50,47 @@ const findAll = async () => {
 
 const findById = async (id) => {
   try {
-    const { data, error } = await supabase
+    const { data: evaluationData, error: evaluationError } = await supabase
       .from("evaluations")
       .select("*")
       .eq("id", id)
       .single();
 
-    if (error) {
-      console.log(error);
+    if (evaluationError) {
+      console.log(evaluationError);
     }
-    return data;
+
+    if (!evaluationData) {
+      return null;
+    }
+
+    let majorIds = [];
+
+    if (Array.isArray(evaluationData.major_id)) {
+      majorIds = evaluationData.major_id;
+    } else if (typeof evaluationData.major_id === "string") {
+      majorIds = evaluationData.major_id.split(",").map((id) => id.trim());
+    }
+
+    const { data: majorData, error: majorError } = await supabase
+      .from("major")
+      .select("major_name")
+      .in("id", majorIds);
+
+    if (majorError) {
+      console.error("Error fetching major data:", majorError);
+      throw new Error("Failed to fetch major data");
+    }
+
+    const majorNames = majorData.map((major) => major.major_name);
+
+    const setupData = await findSetupById(evaluationData.setup_id);
+
+    return {
+      ...evaluationData,
+      major_names: majorNames,
+      setup: setupData,
+    };
   } catch (err) {
     console.log(err);
   }
@@ -110,7 +142,12 @@ const deleteData = async (id) => {
   }
 };
 
-const checkExistingEvaluation = async (setupId, majorIds, semester, endDate) => {
+const checkExistingEvaluation = async (
+  setupId,
+  majorIds,
+  semester,
+  endDate
+) => {
   if (!Array.isArray(majorIds) || majorIds.length === 0) {
     throw new Error("Invalid majorIds");
   }
@@ -138,6 +175,59 @@ const checkExistingEvaluation = async (setupId, majorIds, semester, endDate) => 
 
   return existingEvaluation !== undefined;
 };
+
+const evaluationsDataWithSetup = async () => {
+  try {
+    const { data: evaluationsData, error: evaluationsError } = await supabase
+      .from("evaluations")
+      .select("*");
+
+    if (evaluationsError) {
+      console.error("Error fetching evaluations data:", evaluationsError);
+      throw new Error("Failed to fetch evaluations data");
+    }
+
+    const evaluationsWithMajorNames = await Promise.all(
+      evaluationsData.map(async (evaluation) => {
+        let majorIds = [];
+
+        if (Array.isArray(evaluation.major_id)) {
+          majorIds = evaluation.major_id;
+        } else if (typeof evaluation.major_id === "string") {
+          majorIds = evaluation.major_id.split(",").map((id) => id.trim());
+        }
+
+        const { data: majorData, error: majorError } = await supabase
+          .from("major")
+          .select("major_name")
+          .in("id", majorIds);
+
+        if (majorError) {
+          console.error("Error fetching major data:", majorError);
+          throw new Error("Failed to fetch major data");
+        }
+
+        const majorNames = majorData.map((major) => major.major_name);
+
+        const setupData = await findAllSetup().then((setupData) => {
+          return setupData.find((setup) => setup.id === evaluation.setup_id);
+        });
+
+        return {
+          ...evaluation,
+          major_names: majorNames,
+          setup: setupData,
+        };
+      })
+    );
+
+    return evaluationsWithMajorNames;
+  } catch (error) {
+    console.error("Internal server error:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   findAll,
   findById,
@@ -145,4 +235,5 @@ module.exports = {
   updateData,
   deleteData,
   checkExistingEvaluation,
+  evaluationsDataWithSetup,
 };

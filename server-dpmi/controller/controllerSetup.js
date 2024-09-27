@@ -1,15 +1,15 @@
 const {
-  findById,
+  findSetupById,
   createData,
   updateData,
   deleteData,
   findBySlug,
-  findAll,
+  findAllSetup,
 } = require("../service/serviceSetup");
 
 const getAllData = async (req, res) => {
   try {
-    const data = await findAll();
+    const data = await findAllSetup();
 
     res.json({
       response: {
@@ -34,7 +34,7 @@ const getAllData = async (req, res) => {
 const getDataById = async (req, res) => {
   const { id } = req.params;
   try {
-    const data = await findById(id);
+    const data = await findSetupById(id);
     if (!data) {
       return res.status(404).json({
         response: {

@@ -1,6 +1,6 @@
 const { supabase } = require("../common/common");
 
-const findAll = async () => {
+const findAllSetup = async () => {
   try {
     const { data: setupData, error: setupError } = await supabase
       .from("setup")
@@ -62,18 +62,59 @@ const findAll = async () => {
 
 
 
-const findById = async (id) => {
+const findSetupById = async (id) => {
   try {
-    const { data, error } = await supabase
+    const { data: setupData, error: setupError } = await supabase
       .from("setup")
       .select("*")
       .eq("id", id)
       .single();
 
-    if (error) {
-      console.log(error);
+    if (setupError) {
+      console.log(setupError);
     }
-    return data;
+
+    if (!setupData) {
+      return null;
+    }
+
+    const { data: sectionData, error: sectionError } = await supabase
+      .from("sections")
+      .select("id, section_name, sequence") 
+      .eq("setup_id", setupData.id);
+
+    if (sectionError) {
+      console.error("Error fetching sections data:", sectionError);
+      throw new Error("Failed to fetch sections data");
+    }
+
+    const sectionsWithQuestions = await Promise.all(
+      sectionData.map(async (section) => {
+        const { data: questionData, error: questionError } = await supabase
+          .from("questions")
+          .select("id, question_type, question_data")
+          .eq("section_id", section.id);
+
+        if (questionError) {
+          console.error("Error fetching questions data:", questionError);
+          throw new Error("Failed to fetch questions data");
+        }
+
+        return {
+          ...section,
+          questions: questionData.map((question) => ({
+            id: question.id,
+            question_type: question.question_type,
+            question_data: question.question_data,
+          })),
+        };
+      })
+    );
+
+    return {
+      ...setupData,
+      sections: sectionsWithQuestions,
+    };
   } catch (err) {
     console.log(err);
   }
@@ -229,8 +270,8 @@ const getAllDataWithMajorName = async () => {
 };
 
 module.exports = {
-  findAll,
-  findById,
+  findAllSetup,
+  findSetupById,
   createData,
   updateData,
   deleteData,

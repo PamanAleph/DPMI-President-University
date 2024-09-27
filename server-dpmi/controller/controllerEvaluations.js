@@ -5,6 +5,7 @@ const {
   updateData,
   deleteData,
   checkExistingEvaluation,
+  evaluationsDataWithSetup
 } = require("../service/serviceEvaluations");
 
 const getAllData = async (req, res) => {
@@ -196,6 +197,30 @@ const checkingExistingEvaluation = async (req, res) => {
   }
 };
 
+const evaluationData = async(req,res) => {
+  try {
+    const data = await evaluationsDataWithSetup();
+    res.json({
+      response: {
+        status: "success",
+        message: "Data fetched successfully",
+      },
+      data: data,
+    });
+  } catch (err) {
+    console.error("Internal server error:", err);
+    res.status(500).json({
+      response: {
+        status: "error",
+        message: "Internal server error",
+        details: err.message,
+      },
+      data: null,
+    });
+  }
+}
+
+
 module.exports = {
   getAllData,
   getDataById,
@@ -203,4 +228,5 @@ module.exports = {
   updateExistingData,
   deleteDataById,
   checkingExistingEvaluation,
+  evaluationData
 };
