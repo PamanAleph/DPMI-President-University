@@ -1,6 +1,7 @@
 import axios from "axios";
 import { API_SETUP } from "@/config/config";
 import Setup from "@/models/setup";
+import SetupDetails from "@/models/setupDetails";
 
 export const fetchSetup = async (): Promise<Setup[]> => {
   try {
@@ -8,6 +9,16 @@ export const fetchSetup = async (): Promise<Setup[]> => {
     return response.data.data;
   } catch (error) {
     console.error("Error fetching setups:", error);
+    return [];
+  }
+};
+
+export const fetchSetupDetails = async (): Promise<SetupDetails[]> => {
+  try {
+    const response = await axios.get<{ data: SetupDetails[] }>(`${API_SETUP}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching setup details:", error);
     return [];
   }
 };

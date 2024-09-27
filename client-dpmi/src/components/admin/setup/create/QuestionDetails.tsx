@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import { createQuestion } from "@/service/api/questions";
 import Select from "react-select";
 import Button from "../../Button";
-import { fetchSetup } from "@/service/api/setup";
+import { fetchSetupDetails } from "@/service/api/setup";
 import { useRouter } from "next/navigation";
 
 export default function QuestionDetails() {
@@ -25,7 +25,7 @@ export default function QuestionDetails() {
   useEffect(() => {
     async function loadLatestSetup() {
       try {
-        const fetchedSetups = await fetchSetup();
+        const fetchedSetups = await fetchSetupDetails();
         console.log("Fetched Setups:", fetchedSetups); 
 
         if (Array.isArray(fetchedSetups) && fetchedSetups.length > 0) {

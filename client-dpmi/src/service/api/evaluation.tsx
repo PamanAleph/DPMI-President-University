@@ -1,5 +1,6 @@
 import { API_EVALUATION } from "@/config/config";
 import Evaluation from "@/models/evaluation";
+import EvaluationDetails from "@/models/evaluationDetails";
 import axios from "axios";
 
 export const fetchEvaluations = async () => {
@@ -87,5 +88,17 @@ export const checkEvaluation = async ({
   } catch (error) {
     console.error("Error checking evaluation:", error);
     throw error;
+  }
+};
+
+export const fetchEvaluationById = async (evaluationId: string) => {
+  try {
+    const response = await axios.get<{ data: EvaluationDetails }>(
+      `${API_EVALUATION}/id/${evaluationId}`
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching evaluation by ID:", error);
+    return null;
   }
 };
