@@ -34,6 +34,11 @@ const Sidebar = () => {
       icon: NewspaperIcon,
     },
     {
+      name: "Evaluations",
+      href: "/admin/evaluations",
+      icon: UsersIcon,
+    },
+    {
       name: "Users",
       href: "/admin/users",
       icon: UsersIcon,

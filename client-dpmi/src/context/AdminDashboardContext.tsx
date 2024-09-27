@@ -9,7 +9,7 @@ interface ContextProps {
 
 const AdminDashboardContext = createContext<ContextProps>({
    sidebar: true,
-   toggleSidebar: (bool?: boolean) => {},
+   toggleSidebar: () => {},
 });
 
 export const AdminDashboardContextProvider = ({

@@ -40,7 +40,7 @@ export default function SetupDetails({ onNext }: SetupDetailsProps) {
     setIsSubmitting(true);
     setErrorMessage("");
     try {
-      const setupData: Omit<Setup, "id"> = {
+      const setupData: Omit<Setup, "id" | "create_at"> = {
         name: formData.name,
         slug: formData.slug,
       };

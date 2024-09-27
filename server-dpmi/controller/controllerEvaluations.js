@@ -4,8 +4,7 @@ const {
   createData,
   updateData,
   deleteData,
-  findBySlug,
-} = require("../service/serviceMajor");
+} = require("../service/serviceEvaluations");
 
 const getAllData = async (req, res) => {
   try {
@@ -31,25 +30,26 @@ const getAllData = async (req, res) => {
 };
 
 const getDataById = async (req, res) => {
-  const { id } = req.params;
   try {
+    const id = req.params.id;
     const data = await findById(id);
     if (!data) {
-      return res.status(404).json({
+      res.status(404).json({
         response: {
           status: "error",
           message: "Data not found",
         },
         data: null,
       });
+    } else {
+      res.json({
+        response: {
+          status: "success",
+          message: "Data fetched successfully",
+        },
+        data: data,
+      });
     }
-    res.json({
-      response: {
-        status: "success",
-        message: "Data fetched successfully",
-      },
-      data: data,
-    });
   } catch (err) {
     console.error("Internal server error:", err);
     res.status(500).json({
@@ -87,72 +87,61 @@ const createNewData = async (req, res) => {
 };
 
 const updateExistingData = async (req, res) => {
-  const { id } = req.params;
   try {
-    const data = await updateData(id, req.body);
-    res.json({
-      response: {
-        status: "success",
-        message: "Data updated successfully",
-      },
-      data: data,
-    });
-  } catch (err) {
-    console.error("Internal server error:", err);
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
-  }
-};
-
-const deleteExistingData = async (req, res) => {
-  const { id } = req.params;
-  try {
-    await deleteData(id);
-    res.json({
-      response: {
-        status: "success",
-        message: "Data deleted successfully",
-      },
-    });
-  } catch (err) {
-    console.error("Internal server error:", err);
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
-  }
-};
-
-const getMajorBySlug = async (req, res) => {
-  const { slug } = req.params;
-  try {
-    const data = await findBySlug(slug);
-    if (!data) {
-      return res.status(404).json({
+    const id = req.params.id;
+    const data = req.body;
+    const updatedData = await updateData(id, data);
+    if (!updatedData) {
+      res.status(404).json({
         response: {
           status: "error",
           message: "Data not found",
         },
         data: null,
       });
+    } else {
+      res.json({
+        response: {
+          status: "success",
+          message: "Data updated successfully",
+        },
+        data: updatedData,
+      });
     }
-    res.json({
+  } catch (err) {
+    console.error("Internal server error:", err);
+    res.status(500).json({
       response: {
-        status: "success",
-        message: "Data fetched successfully",
+        status: "error",
+        message: "Internal server error",
+        details: err.message,
       },
-      data: data,
+      data: null,
     });
+  }
+};
+
+const deleteDataById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedData = await deleteData(id);
+    if (!deletedData) {
+      res.status(404).json({
+        response: {
+          status: "error",
+          message: "Data not found",
+        },
+        data: null,
+      });
+    } else {
+      res.json({
+        response: {
+          status: "success",
+          message: "Data deleted successfully",
+        },
+        data: null,
+      });
+    }
   } catch (err) {
     console.error("Internal server error:", err);
     res.status(500).json({
@@ -171,6 +160,5 @@ module.exports = {
   getDataById,
   createNewData,
   updateExistingData,
-  deleteExistingData,
-  getMajorBySlug,
+  deleteDataById,
 };
