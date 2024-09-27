@@ -15,7 +15,7 @@ export const fetchEvaluations = async () => {
 };
 
 export const createEvaluation = async (
-  evaluationData: Omit<Evaluation, "id">
+  evaluationData: Omit<Evaluation, "id" | "major_names" | "setup_name">
 ): Promise<Evaluation[]> => {
   try {
     const response = await axios.post<{ data: Evaluation[] }>(
