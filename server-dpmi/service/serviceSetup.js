@@ -92,7 +92,7 @@ const findSetupById = async (id) => {
       sectionData.map(async (section) => {
         const { data: questionData, error: questionError } = await supabase
           .from("questions")
-          .select("id, question_type, question_data, parent_id")
+          .select("id, question_type, question_data, parent_id, sequence")
           .eq("section_id", section.id);
 
         if (questionError) {
@@ -107,6 +107,7 @@ const findSetupById = async (id) => {
             question_type: question.question_type,
             question_data: question.question_data,
             parent_id: question.parent_id,
+            sequence: question.sequence,
           })),
         };
       })
@@ -177,18 +178,6 @@ const findBySlug = async (slug) => {
       return null;
     }
 
-    const { data: majorData, error: majorError } = await supabase
-      .from("major")
-      .select("major_name")
-      .in("id", setupData.major_id);
-
-    if (majorError) {
-      console.error("Error fetching major data:", majorError);
-      return null;
-    }
-
-    setupData.major_name = majorData.map((major) => major.major_name);
-
     const { data: sectionData, error: sectionError } = await supabase
       .from("sections")
       .select("id, section_name, sequence")
@@ -203,7 +192,7 @@ const findBySlug = async (slug) => {
       sectionData.map(async (section) => {
         const { data: questionData, error: questionError } = await supabase
           .from("questions")
-          .select("id, question_type, question_data")
+          .select("id, question_type, question_data, parent_id, sequence")
           .eq("section_id", section.id); 
 
         if (questionError) {
@@ -217,6 +206,8 @@ const findBySlug = async (slug) => {
             id: question.id,
             question_type: question.question_type,
             question_data: question.question_data,
+            parent_id: question.parent_id,
+            sequence: question.sequence,
           })),
         };
       })

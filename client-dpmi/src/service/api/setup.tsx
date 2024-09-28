@@ -111,9 +111,10 @@ export const fetchSetupById = async (setupId: number): Promise<Setup> => {
   }
 };
 
-export const fetchSetupBySlug = async (slug: string): Promise<Setup> => {
+
+export const fetchSetupBySlug = async (slug: string): Promise<SetupDetails> => {
   try {
-    const response = await axios.get<{ data: Setup }>(`${API_SETUP}/${slug}`);
+    const response = await axios.get<{ data: SetupDetails }>(`${API_SETUP}/${slug}`);
     return response.data.data;
   } catch (error) {
     console.error("Error fetching setup by slug:", error);

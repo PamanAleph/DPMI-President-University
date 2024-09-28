@@ -140,15 +140,13 @@ export default async function EvaluationDetailsPage({
                         {section.questions.map((question, questionIndex) => (
                           <tr key={questionIndex} className="border-b">
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
-                              {questionIndex + 1}
+                              {question.sequence}
                             </td>
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
                               {question.id}
                             </td>
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
-                              {section.questions.findIndex(
-                                (q) => q.id === question.parent_id
-                              ) + 1 || "-"}
+                              {question.parent_id || "-"}
                             </td>
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
                               {question.question_type}

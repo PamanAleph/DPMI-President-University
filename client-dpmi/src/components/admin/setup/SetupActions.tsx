@@ -7,7 +7,7 @@ import Setup from "@/models/setup";
 import { deleteSetup, updateSetupNameAndSlug } from "@/service/api/setup";
 import { checkEvaluation, createEvaluation } from "@/service/api/evaluation";
 import { fetchMajor } from "@/service/api/major"; 
-// import Link from "next/link";
+import Link from "next/link";
 import Select from "react-select"; 
 
 interface SetupActionsProps {
@@ -239,9 +239,9 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
       >
         Generate
       </Button>
-      {/* <Link href={`setup/${setup.slug}`}>
+      <Link href={`setup/${setup.slug}`}>
         <Button className="text-white bg-green-600">View</Button>
-      </Link> */}
+      </Link>
       <Button className="bg-yellow-400 text-white" onClick={handleEditSetup}>
         Edit
       </Button>

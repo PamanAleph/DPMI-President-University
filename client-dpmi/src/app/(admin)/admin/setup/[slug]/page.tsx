@@ -1,77 +1,119 @@
-// import Button from "@/components/admin/Button";
-// import Setup from "@/models/setup";
-// import { fetchSetupBySlug } from "@/service/api/setup";
-// import Link from "next/link";
-// import { redirect } from "next/navigation";
-// import React from "react";
+import Button from "@/components/admin/Button";
+import { fetchSetupBySlug } from "@/service/api/setup";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import React from "react";
 
-// interface SetupDetailsPageProps {
-//   params: { slug: string };
-// }
+interface SetupDetailsPageProps {
+  params: { slug: string };
+}
 
-// export default async function SetupDetailsPage({
-//   params,
-// }: SetupDetailsPageProps) {
-//   if (!params.slug || params.slug.length < 1) {
-//     return redirect("/404");
-//   }
+export default async function SetupDetailsPage({
+  params,
+}: SetupDetailsPageProps) {
+  if (!params.slug || params.slug.length < 1) {
+    return redirect("/404");
+  }
 
-//   const setup: Setup | null = await fetchSetupBySlug(params.slug);
+  const setup = await fetchSetupBySlug(params.slug);
 
-//   if (!setup) {
-//     return redirect("/404");
-//   }
+  if (!setup) {
+    return redirect("/404");
+  }
 
-//   return (
-//     <section>
-//       <h1 className="text-3xl font-bold text-gray-800 mb-6">Setup Details</h1>
+  return (
+    <section className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Setup Details</h1>
 
-//       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//         <div>
-//           <h2 className="text-xl font-semibold text-gray-700 mb-2">
-//             Setup Name
-//           </h2>
-//           <p className="text-lg text-gray-600">{setup.name}</p>
-//         </div>
+      {/* Setup Information */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">Setup Name</h2>
+          <p className="text-lg text-gray-600">{setup.name}</p>
+        </div>
 
-//         <div>
-//           <h2 className="text-xl font-semibold text-gray-700 mb-2">Semester</h2>
-//           <p className="text-lg text-gray-600">{setup.}</p>
-//         </div>
+        <div>
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">Created At</h2>
+          <p className="text-lg text-gray-600">{new Date(setup.create_at).toLocaleDateString()}</p>
+        </div>
 
-//         <div className="md:col-span-2">
-//           <h2 className="text-xl font-semibold text-gray-700 mb-2">Major(s)</h2>
-//           <ul className="list-disc pl-6 text-lg text-gray-600">
-//             {setup.major_name.map((major, index) => (
-//               <li key={index}>{major}</li>
-//             ))}
-//           </ul>
-//         </div>
+        {/* Sections and Questions Table */}
+        <div className="md:col-span-2 mt-6">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">Sections & Questions</h2>
+          <table className="min-w-full bg-white shadow-md rounded-lg border border-gray-300">
+            <thead className="bg-gray-200">
+              <tr className="text-center">
+                <th className="py-2 px-4 text-gray-700 border border-gray-300">Section ID</th>
+                <th className="py-2 px-4 text-gray-700 border border-gray-300">Section Name</th>
+                <th className="py-2 px-4 text-gray-700 border border-gray-300">Sequence</th>
+                <th className="py-2 px-4 text-gray-700 border border-gray-300">Questions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {setup.sections.map((section, sectionIndex) => (
+                <tr
+                  key={sectionIndex}
+                  className="border-b text-center hover:bg-gray-50"
+                >
+                  <td className="py-2 px-4 text-gray-600 border border-gray-300">
+                    {section.id}
+                  </td>
+                  <td className="py-2 px-4 text-gray-600 border border-gray-300">
+                    {section.section_name}
+                  </td>
+                  <td className="py-2 px-4 text-gray-600 border border-gray-300">
+                    {section.sequence}
+                  </td>
+                  <td className="border border-gray-300">
+                    {/* Table for Questions */}
+                    <table className="min-w-full bg-gray-50 text-left border-collapse">
+                      <thead>
+                        <tr>
+                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-1/12">No</th>
+                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-2/12">Question ID</th>
+                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-2/12">Parent ID</th>
+                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-2/12">Type</th>
+                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-5/12">Data</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {section.questions.map((question, questionIndex) => (
+                          <tr key={questionIndex} className="border-b">
+                            <td className="py-1 px-2 text-gray-500 border border-gray-300">
+                              {question.sequence}
+                            </td>
+                            <td className="py-1 px-2 text-gray-500 border border-gray-300">
+                              {question.id}
+                            </td>
+                            <td className="py-1 px-2 text-gray-500 border border-gray-300">
+                              {question.parent_id || "-"}
+                            </td>
+                            <td className="py-1 px-2 text-gray-500 border border-gray-300">
+                              {question.question_type}
+                            </td>
+                            <td className="py-1 px-2 text-gray-500 border border-gray-300">
+                              {question.question_data}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-//         <div>
-//           <h2 className="text-xl font-semibold text-gray-700 mb-2">
-//             Start Date
-//           </h2>
-//           <p className="text-lg text-gray-600">
-//             {new Date(setup.start_date).toLocaleDateString()}
-//           </p>
-//         </div>
-
-//         <div>
-//           <h2 className="text-xl font-semibold text-gray-700 mb-2">End Date</h2>
-//           <p className="text-lg text-gray-600">
-//             {new Date(setup.end_date).toLocaleDateString()}
-//           </p>
-//         </div>
-//       </div>
-
-//       <div className="mt-6">
-//         <Link href="/admin/setup">
-//           <Button className="bg-green-600 text-white rounded-md hover:bg-green-700">
-//             Back to Setup List
-//           </Button>{" "}
-//         </Link>
-//       </div>
-//     </section>
-//   );
-// }
+        {/* Back Button */}
+        <div className="mt-6 md:col-span-2">
+          <Link href="/admin/setup">
+            <Button className="bg-green-600 text-white rounded-md hover:bg-green-700">
+              Back to Setup List
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
