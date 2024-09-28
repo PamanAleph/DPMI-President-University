@@ -27,7 +27,7 @@ const findAllSetup = async () => {
           sectionData.map(async (section) => {
             const { data: questionData, error: questionError } = await supabase
               .from("questions")
-              .select("id, question_type, question_data")
+              .select("id, question_type, question_data, parent_id")
               .eq("section_id", section.id);
 
             if (questionError) {
@@ -41,6 +41,7 @@ const findAllSetup = async () => {
                 id: question.id,
                 question_type: question.question_type,
                 question_data: question.question_data,
+                parent_id: question.parent_id,
               })),
             };
           })
@@ -59,7 +60,6 @@ const findAllSetup = async () => {
     throw err;
   }
 };
-
 
 
 const findSetupById = async (id) => {
@@ -92,7 +92,7 @@ const findSetupById = async (id) => {
       sectionData.map(async (section) => {
         const { data: questionData, error: questionError } = await supabase
           .from("questions")
-          .select("id, question_type, question_data")
+          .select("id, question_type, question_data, parent_id")
           .eq("section_id", section.id);
 
         if (questionError) {
@@ -106,6 +106,7 @@ const findSetupById = async (id) => {
             id: question.id,
             question_type: question.question_type,
             question_data: question.question_data,
+            parent_id: question.parent_id,
           })),
         };
       })
