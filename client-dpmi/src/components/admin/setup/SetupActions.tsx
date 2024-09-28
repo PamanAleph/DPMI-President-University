@@ -177,11 +177,6 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
       const majorIds = Array.isArray(formValues.majorIds)
         ? formValues.majorIds
         : [];
-      console.log("Form Values:", {
-        majorIds,
-        semester: formValues.semester,
-        end_date: formValues.end_date,
-      });
       try {
         const evaluationCheckData = {
           setupId,

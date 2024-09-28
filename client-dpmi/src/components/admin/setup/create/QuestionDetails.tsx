@@ -17,8 +17,12 @@ export default function QuestionDetails() {
     section_id: null as number | null,
   });
 
-  const [sections, setSections] = useState<{ id: number; section_name: string }[]>([]);
-  const [existingQuestions, setExistingQuestions] = useState<{ id: number; question_data: string }[]>([]);
+  const [sections, setSections] = useState<
+    { id: number; section_name: string }[]
+  >([]);
+  const [existingQuestions, setExistingQuestions] = useState<
+    { id: number; question_data: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,13 +37,16 @@ export default function QuestionDetails() {
             setSections(latestSetup.sections);
           }
 
-          const allQuestions = latestSetup.sections.flatMap(section => section.questions || []);
-          console.log("All Questions:", allQuestions); 
+          const allQuestions = latestSetup.sections.flatMap(
+            (section) => section.questions || []
+          );
 
-          setExistingQuestions(allQuestions.map(q => ({
-            id: q.id,
-            question_data: q.question_data,
-          })));
+          setExistingQuestions(
+            allQuestions.map((q) => ({
+              id: q.id,
+              question_data: q.question_data,
+            }))
+          );
         } else {
           throw new Error("No setups found.");
         }
@@ -54,15 +61,19 @@ export default function QuestionDetails() {
     loadLatestSetup();
   }, []);
 
-  const handleQuestionChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleQuestionChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = event.target;
-    setQuestion(prevQuestion => ({
+    setQuestion((prevQuestion) => ({
       ...prevQuestion,
       [name]: value,
     }));
   };
 
-  const handleSectionChange = (selectedOption: { value: number | null; label: string } | null) => {
+  const handleSectionChange = (
+    selectedOption: { value: number | null; label: string } | null
+  ) => {
     if (selectedOption && selectedOption.value !== question.section_id) {
       setQuestion({
         ...question,
@@ -71,12 +82,36 @@ export default function QuestionDetails() {
     }
   };
 
-  const handleParentChange = (selectedOption: { value: number | null; label: string } | null) => {
-    setQuestion(prevQuestion => ({
+  const handleParentChange = (
+    selectedOption: { value: number | null; label: string } | null
+  ) => {
+    setQuestion((prevQuestion) => ({
       ...prevQuestion,
       parent_id: selectedOption ? selectedOption.value : null,
     }));
   };
+
+  const fetchLatestQuestions = async () => {
+    try {
+      const fetchedSetups = await fetchSetupDetails();
+      if (Array.isArray(fetchedSetups) && fetchedSetups.length > 0) {
+        const latestSetup = fetchedSetups[fetchedSetups.length - 1];
+        const allQuestions = latestSetup.sections.flatMap(
+          (section) => section.questions || []
+        );
+        setExistingQuestions(
+          allQuestions.map((q) => ({
+            id: q.id,
+            question_data: q.question_data,
+          }))
+        );
+      } else {
+        throw new Error("No setups found.");
+      }
+    } catch (error) {
+      console.error("Failed to fetch latest questions:", error);
+    }
+  };  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +125,7 @@ export default function QuestionDetails() {
         parent_id: null,
         section_id: question.section_id,
       });
+      await fetchLatestQuestions();
     } catch (error) {
       console.error("Failed to create question:", error);
       Swal.fire("Error", "Failed to add question!", "error");
@@ -103,27 +139,26 @@ export default function QuestionDetails() {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, end it!",
-    }).then(result => {
+    }).then((result) => {
       if (result.isConfirmed) {
         Swal.fire("Ended!", "Question session has ended.", "success");
-        router.push("/admin/setup"); 
+        router.push("/admin/setup");
       }
     });
   };
 
-  const sectionOptions = sections.map(section => ({
+  const sectionOptions = sections.map((section) => ({
     value: section.id,
     label: section.section_name,
   }));
 
   const parentOptions = [
     { value: null, label: "No Parent" },
-    ...existingQuestions.map(q => ({
+    ...existingQuestions.map((q) => ({
       value: q.id,
       label: q.question_data,
     })),
   ];
-  console.log("Parent Options:", parentOptions);
 
   return (
     <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6">
@@ -141,7 +176,9 @@ export default function QuestionDetails() {
               name="section_id"
               options={sectionOptions}
               onChange={handleSectionChange}
-              value={sectionOptions.find(option => option.value === question.section_id)}
+              value={sectionOptions.find(
+                (option) => option.value === question.section_id
+              )}
               className="mb-2"
               placeholder="Select Section"
               required
@@ -177,7 +214,11 @@ export default function QuestionDetails() {
               onChange={handleParentChange}
               className="mb-2"
               placeholder="Select Parent Question (optional)"
-              value={parentOptions.find(option => option.value === question.parent_id) || null}
+              value={
+                parentOptions.find(
+                  (option) => option.value === question.parent_id
+                ) || null
+              }
             />
           </div>
           <div className="flex items-center space-x-4">
