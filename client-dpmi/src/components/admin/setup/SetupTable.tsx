@@ -7,6 +7,10 @@ interface SetupTableProps {
 }
 
 export default function SetupTable({ setups }: SetupTableProps) {
+  const sortedSetups = setups.sort((a, b) => {
+    return new Date(a.create_at).getTime() - new Date(b.create_at).getTime();
+  });
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full table-fixed divide-y-2 divide-gray-200 bg-white text-sm">
@@ -28,7 +32,7 @@ export default function SetupTable({ setups }: SetupTableProps) {
         </thead>
 
         <tbody className="divide-y divide-gray-200 text-center">
-          {setups.map((setup, index) => (
+          {sortedSetups.map((setup, index) => (
             <tr key={setup.id}>
               <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                 {index + 1}

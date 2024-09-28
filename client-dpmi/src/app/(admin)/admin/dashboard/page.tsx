@@ -38,55 +38,59 @@ export default async function page() {
           ))}
         </div>
 
-        {/* Recent Setups */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Recent Setups
-          </h2>
-          <ul className="space-y-6">
-            {recentSetups.map((setup, index) => (
-              <li
-                key={index}
-                className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
-              >
-                <h3 className="font-semibold text-lg text-gray-700">
-                  {setup.name}
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">ID: {setup.id}</p>
-                <p className="text-sm text-gray-500">
-                  Created At: {new Date(setup.create_at).toLocaleDateString()}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
+          {/* Recent Setups */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Recent Setups
+            </h2>
+            <ul className="space-y-6">
+              {recentSetups.map((setup, index) => (
+                <li
+                  key={index}
+                  className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+                >
+                  <h3 className="font-semibold text-lg text-gray-700">
+                    {setup.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">ID: {setup.id}</p>
+                  <p className="text-sm text-gray-500 mt-1">Slug: {setup.slug}</p>
+                  <p className="text-sm text-gray-500">
+                    Created At: {new Date(setup.create_at).toLocaleDateString()}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        {/* Recent Evaluations */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Recent Evaluations
-          </h2>
-          <ul className="space-y-6">
-            {recentEvaluations.map((evaluation, index) => (
-              <li
-                key={index}
-                className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
-              >
-                <h3 className="font-semibold text-lg text-gray-700">
-                  Evaluation ID: {evaluation.id}
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Related Setup: {evaluation.setup_id}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Related Major: {evaluation.major_names.join(", ")}
-                </p>{" "}
-                <p className="text-sm text-gray-500 mt-1">
-                  End Date: {new Date(evaluation.end_date).toLocaleDateString()}
-                </p>
-              </li>
-            ))}
-          </ul>
+          {/* Recent Evaluations */}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Recent Evaluations
+            </h2>
+            <ul className="space-y-6">
+              {recentEvaluations.map((evaluation, index) => (
+                <li
+                  key={index}
+                  className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+                >
+                  <h3 className="font-semibold text-lg text-gray-700">
+                    Evaluation ID: {evaluation.id}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Related Setup: {evaluation.setup_id}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Related Major: {evaluation.major_names.join(", ")}
+                  </p>{" "}
+                  <p className="text-sm text-gray-500 mt-1">
+                    End Date:{" "}
+                    {new Date(evaluation.end_date).toLocaleDateString()}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
     );
