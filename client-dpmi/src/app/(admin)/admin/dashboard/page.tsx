@@ -86,9 +86,6 @@ export default async function page() {
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">ID: {setup.id}</p>
                   <p className="text-sm text-gray-500 mt-1">
-                    Slug: {setup.slug}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
                     Created At: {new Date(setup.create_at).toLocaleDateString()}
                   </p>
                 </li>
