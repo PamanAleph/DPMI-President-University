@@ -1,7 +1,14 @@
+import UsersTable from '@/components/admin/users/UsersTable'
+import { GetUserList } from '@/service/api/users'
 import React from 'react'
 
-export default function page() {
+export default async function page() {
+
+  const users = await GetUserList()
+
   return (
-    <div>page</div>
+    <section>
+     <UsersTable users={users}/>
+    </section>
   )
 }

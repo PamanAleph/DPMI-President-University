@@ -20,7 +20,7 @@ export default function StatisticCard({ title, value, icon, color = 'blue' }: St
       )}
 
       <div className="flex-1">
-        <h4 className="text-xl font-semibold text-white mb-1">{title}</h4>
+        <h4 className="text-xl md:text-lg font-semibold text-white mb-1">{title}</h4>
         <p className="text-3xl font-bold text-white">{value.toLocaleString()}</p>
       </div>
     </div>

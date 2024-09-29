@@ -3,7 +3,9 @@ const express = require("express");
 const app = express();
 require("./config/db");
 const cors = require("cors");
+const bodyParser = require('body-parser');
 
+app.use(bodyParser.json());
 app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -14,6 +16,8 @@ const routerSections = require("./routes/sectionsRoute")
 const routerQuestions = require("./routes/questionRoute");
 const routerEvaluations = require("./routes/evaluationsRoute");
 const routerAnswer = require("./routes/answerRoute");
+const routerAuth = require("./routes/authRoute")
+const routerUsers = require("./routes/userRoutes")
 
 app.use("/api/v1/major", routerMajor);
 app.use("/api/v1/setup", routerSetup);
@@ -21,6 +25,9 @@ app.use("/api/v1/sections", routerSections);
 app.use("/api/v1/questions", routerQuestions);
 app.use("/api/v1/evaluations", routerEvaluations);
 app.use("/api/v1/answers", routerAnswer);
+app.use("/api/v1/auth", routerAuth);
+app.use("/api/v1/users", routerUsers);
+
 
 
 const port = process.env.PORT | 4000;
