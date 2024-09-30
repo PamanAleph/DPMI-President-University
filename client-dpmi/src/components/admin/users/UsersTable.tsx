@@ -1,6 +1,6 @@
 import React from "react";
 import Users from "@/models/users";
-// import EvaluationActions from "./UsersAction";
+// import UsersAction from "./UsersAction";
 
 interface UsersTableProps {
   users: Users[];
@@ -52,7 +52,7 @@ export default function UsersTable({ users }: UsersTableProps) {
                 {user.role_name}
               </td>
               <td className="whitespace-nowrap px-4 py-2 text-center">
-                {/* <EvaluationActions evaluationId={evaluation.id} evaluation={evaluation} /> */}
+                {/* <UsersAction user={user} userId={user.id}/> */}
               </td>
             </tr>
           ))}

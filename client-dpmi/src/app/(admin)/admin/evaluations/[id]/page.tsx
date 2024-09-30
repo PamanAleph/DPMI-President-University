@@ -23,7 +23,7 @@ export default async function EvaluationDetailsPage({
   }
 
   return (
-    <div className="p-6 md:p-10">
+    <div>
       <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
         Evaluation Details
       </h1>
@@ -80,21 +80,21 @@ export default async function EvaluationDetailsPage({
         </p>
 
         {/* Sections Table */}
-        <h3 className="text-lg font-semibold text-gray-700 mt-6">Sections</h3>
+        <h3 className="text-lg font-semibold text-gray-700 mt-6">Form Data</h3>
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full bg-white shadow-md rounded-lg border border-gray-300">
             <thead className="bg-gray-200">
               <tr className="text-center">
-                <th className="py-2 px-4 text-gray-700 border border-gray-300">
-                  Section ID
+                <th className="py-2 px-4 text-gray-700 border border-gray-300 w-1/12">
+                  Section Sequence
                 </th>
-                <th className="py-2 px-4 text-gray-700 border border-gray-300">
+                {/* <th className="py-2 px-4 text-gray-700 border border-gray-300 w-1/12">
+                  Section ID
+                </th> */}
+                <th className="py-2 px-4 text-gray-700 border border-gray-300 w-3/12">
                   Section Name
                 </th>
-                <th className="py-2 px-4 text-gray-700 border border-gray-300">
-                  Sequence
-                </th>
-                <th className="py-2 px-4 text-gray-700 border border-gray-300">
+                <th className="py-2 px-4 text-gray-700 border border-gray-300 w-full">
                   Questions
                 </th>
               </tr>
@@ -106,13 +106,13 @@ export default async function EvaluationDetailsPage({
                   className="border-b text-center hover:bg-gray-50"
                 >
                   <td className="py-2 px-4 text-gray-600 border border-gray-300">
-                    {section.id}
+                    {section.sequence}
                   </td>
+                  {/* <td className="py-2 px-4 text-gray-600 border border-gray-300">
+                    {section.id}
+                  </td> */}
                   <td className="py-2 px-4 text-gray-600 border border-gray-300">
                     {section.section_name}
-                  </td>
-                  <td className="py-2 px-4 text-gray-600 border border-gray-300">
-                    {section.sequence}
                   </td>
                   <td className="border border-gray-300">
                     {/* Table for Questions */}
@@ -122,9 +122,9 @@ export default async function EvaluationDetailsPage({
                           <th className="py-1 px-2 text-gray-600 border border-gray-300 w-1/12">
                             No
                           </th>
-                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-2/12">
+                          {/* <th className="py-1 px-2 text-gray-600 border border-gray-300 w-2/12">
                             Question ID
-                          </th>
+                          </th> */}
                           <th className="py-1 px-2 text-gray-600 border border-gray-300 w-2/12">
                             Parent ID
                           </th>
@@ -138,13 +138,16 @@ export default async function EvaluationDetailsPage({
                       </thead>
                       <tbody>
                         {section.questions.map((question, questionIndex) => (
-                          <tr key={questionIndex} className="border-b">
+                          <tr
+                            key={questionIndex}
+                            className="border-b text-justify"
+                          >
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
                               {question.sequence}
                             </td>
-                            <td className="py-1 px-2 text-gray-500 border border-gray-300">
+                            {/* <td className="py-1 px-2 text-gray-500 border border-gray-300">
                               {question.id}
-                            </td>
+                            </td> */}
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
                               {question.parent_id || "-"}
                             </td>

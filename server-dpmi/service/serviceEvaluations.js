@@ -12,7 +12,7 @@ const findAll = async () => {
       throw new Error("Failed to fetch evaluations data");
     }
 
-    const evaluationsWithMajorNames = await Promise.all(
+    const evaluationsWithMajorAndSetupNames = await Promise.all(
       evaluationsData.map(async (evaluation) => {
         let majorIds = [];
 
@@ -34,14 +34,28 @@ const findAll = async () => {
 
         const majorNames = majorData.map((major) => major.major_name);
 
+        const { data: setupData, error: setupError } = await supabase
+          .from("setup")
+          .select("name")
+          .eq("id", evaluation.setup_id)
+          .single();
+
+        if (setupError) {
+          console.error("Error fetching setup data:", setupError);
+          throw new Error("Failed to fetch setup data");
+        }
+
+        const setupName = setupData ? setupData.name : null;
+
         return {
           ...evaluation,
           major_names: majorNames,
+          setup_name: setupName,
         };
       })
     );
 
-    return evaluationsWithMajorNames;
+    return evaluationsWithMajorAndSetupNames;
   } catch (error) {
     console.error("Internal server error:", error);
     throw error;

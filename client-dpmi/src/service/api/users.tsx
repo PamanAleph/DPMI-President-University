@@ -46,17 +46,9 @@ export async function CreateUser(accessToken: string, user: Users) {
   }
 }
 
-export async function UpdateUser(
-  accessToken: string,
-  userId: number,
-  user: Users
-) {
+export async function UpdateUser(userId: number, user: Users) {
   try {
-    const response = await axios.put(`${API_USER}/${userId}`, user, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const response = await axios.put(`${API_USER}/${userId}`, user);
 
     return response.data.data;
   } catch (error) {
@@ -65,13 +57,9 @@ export async function UpdateUser(
   }
 }
 
-export async function DeleteUser(accessToken: string, userId: number) {
+export async function DeleteUser(userId: number) {
   try {
-    const response = await axios.delete(`${API_USER}/id/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const response = await axios.delete(`${API_USER}/id/${userId}`);
 
     return response.data.data;
   } catch (error) {

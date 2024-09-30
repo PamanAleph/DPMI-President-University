@@ -18,6 +18,7 @@ const routerEvaluations = require("./routes/evaluationsRoute");
 const routerAnswer = require("./routes/answerRoute");
 const routerAuth = require("./routes/authRoute")
 const routerUsers = require("./routes/userRoutes")
+const routerRole = require('./routes/roleRoute')
 
 app.use("/api/v1/major", routerMajor);
 app.use("/api/v1/setup", routerSetup);
@@ -27,7 +28,7 @@ app.use("/api/v1/evaluations", routerEvaluations);
 app.use("/api/v1/answers", routerAnswer);
 app.use("/api/v1/auth", routerAuth);
 app.use("/api/v1/users", routerUsers);
-
+app.use("/api/v1/roles", routerRole);
 
 
 const port = process.env.PORT | 4000;

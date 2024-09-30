@@ -16,6 +16,9 @@ export default function EvaluationTable({ evaluations }: EvaluationTableProps) {
               No
             </th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+              Setup Name
+            </th>
+            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
               Semester
             </th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
@@ -35,6 +38,9 @@ export default function EvaluationTable({ evaluations }: EvaluationTableProps) {
             <tr key={evaluation.id}>
               <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                 {index + 1}
+              </td>
+              <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                {evaluation.setup_name}
               </td>
               <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[150px]">
                 {evaluation.semester}

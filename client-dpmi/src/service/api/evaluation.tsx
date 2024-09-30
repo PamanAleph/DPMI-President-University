@@ -11,7 +11,7 @@ export const fetchEvaluations = async () => {
     return response.data.data;
   } catch (error) {
     console.error("Error fetching evaluations:", error);
-    return [];
+    throw error;
   }
 };
 

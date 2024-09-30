@@ -3,7 +3,12 @@ import { fetchEvaluations } from "@/service/api/evaluation";
 import { fetchMajor } from "@/service/api/major";
 import { fetchSetup } from "@/service/api/setup";
 import { GetUserList } from "@/service/api/users";
-import { AcademicCapIcon, ClipboardDocumentListIcon, CogIcon } from "@heroicons/react/24/outline";
+import {
+  AcademicCapIcon,
+  ClipboardDocumentListIcon,
+  CogIcon,
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
 import React from "react";
 
 export default async function page() {
@@ -20,14 +25,33 @@ export default async function page() {
     const totalSetups = setups.length;
     const totalUsers = users.length;
 
-    const recentSetups = setups.slice(0, 3);
-    const recentEvaluations = evaluations.slice(0, 3);
+    const recentSetups = setups.sort((a, b) => b.id - a.id).slice(0, 3);
+
+    const recentEvaluations = evaluations
+      .sort((a, b) => b.id - a.id)
+      .slice(0, 3);
 
     const statistickData = [
-      { label: "Majors", value: totalMajors, icon: <AcademicCapIcon className="h-6 w-6" /> },
-      { label: "Evaluations", value: totalEvaluations, icon: <ClipboardDocumentListIcon className="h-6 w-6" /> },
-      { label: "Setups", value: totalSetups, icon: <CogIcon className="h-6 w-6" /> },
-      { label: "Users", value: totalUsers, icon: <CogIcon className="h-6 w-6" /> },
+      {
+        label: "Majors",
+        value: totalMajors,
+        icon: <AcademicCapIcon className="h-6 w-6" />,
+      },
+      {
+        label: "Evaluations",
+        value: totalEvaluations,
+        icon: <ClipboardDocumentListIcon className="h-6 w-6" />,
+      },
+      {
+        label: "Setups",
+        value: totalSetups,
+        icon: <CogIcon className="h-6 w-6" />,
+      },
+      {
+        label: "Users",
+        value: totalUsers,
+        icon: <CogIcon className="h-6 w-6" />,
+      },
     ];
 
     return (
@@ -57,19 +81,21 @@ export default async function page() {
                   key={index}
                   className="h-full p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 min-h-[150px]"
                 >
-                  <h3 className="font-semibold text-lg text-gray-700">
-                    Evaluation ID: {evaluation.id}
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Related Setup: {evaluation.setup_id}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Related Major: {evaluation.major_names.join(", ")}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    End Date:{" "}
-                    {new Date(evaluation.end_date).toLocaleDateString()}
-                  </p>
+                  <Link key={index} href={`evaluations/${evaluation.id}`}>
+                    <h3 className="font-semibold text-lg text-gray-700">
+                      Evaluation ID: {evaluation.id}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Related Setup: {evaluation.setup_id}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Related Major: {evaluation.major_names.join(", ")}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      End Date:{" "}
+                      {new Date(evaluation.end_date).toLocaleDateString()}
+                    </p>
+                  </Link>
                 </li>
               ))}
             </ul>
