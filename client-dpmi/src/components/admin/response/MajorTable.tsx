@@ -10,7 +10,7 @@ interface MajorTableProps {
 
 export default function MajorTable({ majors }: MajorTableProps) {
     const sortedMajors = [...majors].sort((a, b) => 
-        a.major_name.localeCompare(b.major_name)
+        a.name.localeCompare(b.name)
       );
 
   const formatEmails = (emails: string | string[] | null) => {
@@ -62,10 +62,10 @@ export default function MajorTable({ majors }: MajorTableProps) {
                 {index + 1}
               </td>
               <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[150px]">
-                {major.major_name}
+                {major.name}
               </td>
               <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[150px]">
-                {major.major_head || "N/A"}
+                {major.head || "N/A"}
               </td>
               <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[200px]">
                 {formatEmails(major.emails) || "N/A"}

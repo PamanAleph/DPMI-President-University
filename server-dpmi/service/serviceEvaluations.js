@@ -20,7 +20,7 @@ const findAll = async () => {
           SELECT name FROM major WHERE id = ANY($1::int[])
         `;
         const { rows: majorData } = await client.query(majorQuery, [majorIds]);
-        const majorNames = majorData.map((major) => major.major_name);
+        const majorNames = majorData.map((major) => major.name);
 
         // Fetch setup name based on setup_id
         const setupQuery = `

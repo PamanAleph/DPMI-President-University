@@ -14,7 +14,7 @@ export const fetchMajor = async (): Promise<Major[]> => {
 };
 
 export const createMajor = async (
-  majorData: Omit<Major, "id" | "created_at" >
+  majorData: Omit<Major, "id" | "created_at">
 ): Promise<Major[]> => {
   try {
     const response = await axios.post<{ data: Major[] }>(
@@ -24,25 +24,29 @@ export const createMajor = async (
         headers: { "Content-Type": "application/json" },
       }
     );
+
+    console.log("Response from API:", response); // Log API response
+
     return response.data.data;
   } catch (error) {
-    console.error("Error creating major:", error);
+    console.error("Error creating major:", error); // Log error details
     throw error;
   }
 };
 
-export const updateMajor = async (majorData: Major): Promise<Major[]> => {
+
+export const updateMajor = async (majorData: Major): Promise<Major> => {
   try {
-    const response = await axios.put<{ data: Major[] }>(
-      `${API_MAJOR}/${majorData.id}`,
-      majorData,
+    const response = await axios.put<{ data: Major }>(
+      `${API_MAJOR}/${majorData.id}`, // API endpoint with ID for update
+      majorData, // Data to be updated
       {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" }, // Set headers
       }
     );
-    return response.data.data;
-  } catch (error) {
-    console.error("Error updating major:", error);
+    return response.data.data; // Return the updated Major object
+  }catch (error) {
+    console.error("Error update major:", error); // Log error details
     throw error;
   }
 };

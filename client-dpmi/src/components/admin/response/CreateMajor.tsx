@@ -11,17 +11,17 @@ export default function CreateMajor() {
     const { value: formValues } = await Swal.fire({
       title: "Add New Major",
       html: `
-        <input id="major_name" class="swal2-input" placeholder="Major Name">
-        <input id="major_head" class="swal2-input" placeholder="Major Head">
+        <input id="name" class="swal2-input" placeholder="Major Name">
+        <input id="head" class="swal2-input" placeholder="Major Head">
         <input id="emails" class="swal2-input" placeholder="Emails (comma separated)">
       `,
       focusConfirm: false,
       preConfirm: () => {
-        const major_name = (
-          document.getElementById("major_name") as HTMLInputElement
+        const name = (
+          document.getElementById("name") as HTMLInputElement
         ).value;
-        const major_head = (
-          document.getElementById("major_head") as HTMLInputElement
+        const head = (
+          document.getElementById("head") as HTMLInputElement
         ).value;
         const emails = (
           document.getElementById("emails") as HTMLInputElement
@@ -29,15 +29,15 @@ export default function CreateMajor() {
           .split(",")
           .map((email) => email.trim());
         const slug = (
-            document.getElementById("major_name") as HTMLInputElement
+            document.getElementById("name") as HTMLInputElement
             ).value.toLowerCase().replace(/[^a-z0-9]+/g, "-"
         )
 
-        if (!major_name || !major_head || !emails.length) {
+        if (!name || !head || !emails.length) {
           Swal.showValidationMessage("Please fill all fields");
         }
 
-        return { major_name, major_head, emails, slug };
+        return { name, head, emails, slug };
       },
       showCancelButton: true,
       confirmButtonText: "Create",
@@ -45,16 +45,19 @@ export default function CreateMajor() {
     });
 
     if (formValues) {
-      const { major_name, major_head, emails, slug }: Major = formValues;
+      const { name, head, emails, slug }: Major = formValues;
+      console.log(formValues)
 
       try {
-        await createMajor({ major_name, major_head, emails,slug });
+        await createMajor({ name, head, emails,slug });
         Swal.fire("Success", "Major created successfully!", "success").then(() =>{
             window.location.reload();
         });
-      } catch {
-        Swal.fire("Error", "Failed to create major!", "error");
+      } catch (err) {
+        console.log("Database insert error:", err);
+        throw err;
       }
+      
     }
   };
 

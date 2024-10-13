@@ -19,28 +19,37 @@ const findById = async (id) => {
 };
 
 const createData = async (data) => {
-  const { name, slug, description } = data; // Adjust these fields based on your table structure
+  const { name, slug, head, emails } = data; 
   try {
+    const emailsString = emails.join(", ");
+
     const result = await client.query(
-      "INSERT INTO major (name, slug, description) VALUES ($1, $2, $3) RETURNING *",
-      [name, slug, description]
+      "INSERT INTO major (name, slug, head, emails) VALUES ($1, $2, $3, $4) RETURNING *",
+      [name, slug, head, emailsString] 
     );
-    return result.rows[0];
+
+    return { response: result.rows[0] };  
   } catch (err) {
-    console.log(err);
+    console.log("Database insert error:", err); 
+    throw err;
   }
 };
 
+
 const updateData = async (id, data) => {
-  const { name, slug, description } = data; // Adjust these fields based on your table structure
+  const { name, slug, head, emails } = data;
   try {
+    const emailsString = emails.join(", ");
+
     const result = await client.query(
-      "UPDATE major SET name = $1, slug = $2, description = $3 WHERE id = $4 RETURNING *",
-      [name, slug, description, id]
+      "UPDATE major SET name = $1, slug = $2, head = $3, emails = $4 WHERE id = $5 RETURNING *",
+      [name, slug, head, emailsString, id] 
     );
+
     return result.rows[0];
   } catch (err) {
-    console.log(err);
+    console.error("Database update error:", err);
+    throw err;
   }
 };
 
