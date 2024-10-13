@@ -1,12 +1,9 @@
-const { supabase } = require("../common/common");
+const { client } = require("../config/db");
 
 const findAll = async () => {
   try {
-    const { data, error } = await supabase.from("roles").select("*");
-    if (error) {
-      console.log(error);
-    }
-    return data;
+    const result = await client.query("SELECT * FROM roles");
+    return result.rows;
   } catch (err) {
     console.error("Internal server error:", err);
   }
@@ -14,46 +11,34 @@ const findAll = async () => {
 
 const findById = async (id) => {
   try {
-    const { data, error } = await supabase
-      .from("roles")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) {
-      console.log(error);
-    }
-    return data;
+    const result = await client.query("SELECT * FROM roles WHERE id = $1", [id]);
+    return result.rows[0];
   } catch (err) {
     console.log(err);
   }
 };
 
 const createData = async (data) => {
+  const { name, description } = data;
   try {
-    const { data: createdData, error } = await supabase
-      .from("roles")
-      .insert(data);
-    if (error) {
-      console.log(error);
-    }
-    return createdData;
+    const result = await client.query(
+      "INSERT INTO roles (name, description) VALUES ($1, $2) RETURNING *",
+      [name, description]
+    );
+    return result.rows[0];
   } catch (err) {
     console.log(err);
   }
 };
 
 const updateData = async (id, data) => {
+  const { name, description } = data;
   try {
-    const { data: updatedData, error } = await supabase
-      .from("roles")
-      .update(data)
-      .eq("id", id);
-
-    if (error) {
-      console.log(error);
-    }
-    return updatedData;
+    const result = await client.query(
+      "UPDATE roles SET name = $1, description = $2 WHERE id = $3 RETURNING *",
+      [name, description, id]
+    );
+    return result.rows[0];
   } catch (err) {
     console.log(err);
   }
@@ -61,11 +46,8 @@ const updateData = async (id, data) => {
 
 const deleteData = async (id) => {
   try {
-    const { data, error } = await supabase.from("roles").delete().eq("id", id);
-    if (error) {
-      console.log(error);
-    }
-    return data;
+    const result = await client.query("DELETE FROM roles WHERE id = $1 RETURNING *", [id]);
+    return result.rows[0];
   } catch (err) {
     console.log(err);
   }

@@ -1,16 +1,9 @@
-const { supabase } = require("../common/common");
-const { findAllSetup, findSetupById } = require("./serviceSetup");
+const { client } = require("../config/db"); // Assuming you are using a PostgreSQL client like pg or knex
 
 const findAll = async () => {
   try {
-    const { data: evaluationsData, error: evaluationsError } = await supabase
-      .from("evaluations")
-      .select("*");
-
-    if (evaluationsError) {
-      console.error("Error fetching evaluations data:", evaluationsError);
-      throw new Error("Failed to fetch evaluations data");
-    }
+    const evaluationsQuery = 'SELECT * FROM evaluations';
+    const { rows: evaluationsData } = await client.query(evaluationsQuery);
 
     const evaluationsWithMajorAndSetupNames = await Promise.all(
       evaluationsData.map(async (evaluation) => {
@@ -22,30 +15,19 @@ const findAll = async () => {
           majorIds = evaluation.major_id.split(",").map((id) => id.trim());
         }
 
-        const { data: majorData, error: majorError } = await supabase
-          .from("major")
-          .select("major_name")
-          .in("id", majorIds);
-
-        if (majorError) {
-          console.error("Error fetching major data:", majorError);
-          throw new Error("Failed to fetch major data");
-        }
-
+        // Fetch major names based on major_ids
+        const majorQuery = `
+          SELECT name FROM major WHERE id = ANY($1::int[])
+        `;
+        const { rows: majorData } = await client.query(majorQuery, [majorIds]);
         const majorNames = majorData.map((major) => major.major_name);
 
-        const { data: setupData, error: setupError } = await supabase
-          .from("setup")
-          .select("name")
-          .eq("id", evaluation.setup_id)
-          .single();
-
-        if (setupError) {
-          console.error("Error fetching setup data:", setupError);
-          throw new Error("Failed to fetch setup data");
-        }
-
-        const setupName = setupData ? setupData.name : null;
+        // Fetch setup name based on setup_id
+        const setupQuery = `
+          SELECT name FROM setup WHERE id = $1 LIMIT 1
+        `;
+        const { rows: setupData } = await client.query(setupQuery, [evaluation.setup_id]);
+        const setupName = setupData[0] ? setupData[0].name : null;
 
         return {
           ...evaluation,
@@ -64,46 +46,35 @@ const findAll = async () => {
 
 const findById = async (id) => {
   try {
-    const { data: evaluationData, error: evaluationError } = await supabase
-      .from("evaluations")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const evaluationQuery = 'SELECT * FROM evaluations WHERE id = $1 LIMIT 1';
+    const { rows: evaluationData } = await client.query(evaluationQuery, [id]);
 
-    if (evaluationError) {
-      console.log(evaluationError);
-    }
-
-    if (!evaluationData) {
+    if (!evaluationData.length) {
       return null;
     }
 
+    const evaluation = evaluationData[0];
     let majorIds = [];
 
-    if (Array.isArray(evaluationData.major_id)) {
-      majorIds = evaluationData.major_id;
-    } else if (typeof evaluationData.major_id === "string") {
-      majorIds = evaluationData.major_id.split(",").map((id) => id.trim());
+    if (Array.isArray(evaluation.major_id)) {
+      majorIds = evaluation.major_id;
+    } else if (typeof evaluation.major_id === "string") {
+      majorIds = evaluation.major_id.split(",").map((id) => id.trim());
     }
 
-    const { data: majorData, error: majorError } = await supabase
-      .from("major")
-      .select("major_name")
-      .in("id", majorIds);
-
-    if (majorError) {
-      console.error("Error fetching major data:", majorError);
-      throw new Error("Failed to fetch major data");
-    }
-
+    const majorQuery = `
+      SELECT name FROM major WHERE id = ANY($1::int[])
+    `;
+    const { rows: majorData } = await client.query(majorQuery, [majorIds]);
     const majorNames = majorData.map((major) => major.major_name);
 
-    const setupData = await findSetupById(evaluationData.setup_id);
+    const setupQuery = 'SELECT * FROM setup WHERE id = $1 LIMIT 1';
+    const { rows: setupData } = await client.query(setupQuery, [evaluation.setup_id]);
 
     return {
-      ...evaluationData,
+      ...evaluation,
       major_names: majorNames,
-      setup: setupData,
+      setup: setupData[0] || null,
     };
   } catch (err) {
     console.log(err);
@@ -112,13 +83,15 @@ const findById = async (id) => {
 
 const createData = async (data) => {
   try {
-    const { data: createdData, error } = await supabase
-      .from("evaluations")
-      .insert(data);
-    if (error) {
-      console.log(error);
-    }
-    return createdData;
+    const insertQuery = `
+      INSERT INTO evaluations (setup_id, major_id, semester, end_date)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *
+    `;
+    const values = [data.setup_id, data.major_id, data.semester, data.end_date];
+    const { rows: createdData } = await client.query(insertQuery, values);
+
+    return createdData[0];
   } catch (err) {
     console.log(err);
   }
@@ -126,15 +99,16 @@ const createData = async (data) => {
 
 const updateData = async (id, data) => {
   try {
-    const { data: updatedData, error } = await supabase
-      .from("evaluations")
-      .update(data)
-      .eq("id", id);
+    const updateQuery = `
+      UPDATE evaluations
+      SET setup_id = $1, major_id = $2, semester = $3, end_date = $4
+      WHERE id = $5
+      RETURNING *
+    `;
+    const values = [data.setup_id, data.major_id, data.semester, data.end_date, id];
+    const { rows: updatedData } = await client.query(updateQuery, values);
 
-    if (error) {
-      console.log(error);
-    }
-    return updatedData;
+    return updatedData[0];
   } catch (err) {
     console.log(err);
   }
@@ -142,43 +116,27 @@ const updateData = async (id, data) => {
 
 const deleteData = async (id) => {
   try {
-    const { data, error } = await supabase
-      .from("evaluations")
-      .delete()
-      .eq("id", id);
+    const deleteQuery = 'DELETE FROM evaluations WHERE id = $1 RETURNING *';
+    const { rows: deletedData } = await client.query(deleteQuery, [id]);
 
-    if (error) {
-      console.log(error);
-    }
-    return data;
+    return deletedData[0];
   } catch (err) {
     console.log(err);
   }
 };
 
-const checkExistingEvaluation = async (
-  setupId,
-  majorIds,
-  semester,
-  endDate
-) => {
+const checkExistingEvaluation = async (setupId, majorIds, semester, endDate) => {
   if (!Array.isArray(majorIds) || majorIds.length === 0) {
     throw new Error("Invalid majorIds");
   }
 
-  const { data, error } = await supabase
-    .from("evaluations")
-    .select("*")
-    .eq("setup_id", setupId)
-    .eq("semester", semester)
-    .eq("end_date", endDate)
-    .contains("major_id", majorIds);
+  const checkQuery = `
+    SELECT * FROM evaluations
+    WHERE setup_id = $1 AND semester = $2 AND end_date = $3 AND major_id @> $4::int[]
+  `;
+  const { rows: existingEvaluations } = await client.query(checkQuery, [setupId, semester, endDate, majorIds]);
 
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const existingEvaluation = data.find((evaluation) => {
+  const existingEvaluation = existingEvaluations.find((evaluation) => {
     return (
       evaluation.setup_id === setupId &&
       JSON.stringify(evaluation.major_id) === JSON.stringify(majorIds) &&
@@ -187,19 +145,13 @@ const checkExistingEvaluation = async (
     );
   });
 
-  return existingEvaluation !== undefined;
+  return !!existingEvaluation;
 };
 
 const evaluationsDataWithSetup = async () => {
   try {
-    const { data: evaluationsData, error: evaluationsError } = await supabase
-      .from("evaluations")
-      .select("*");
-
-    if (evaluationsError) {
-      console.error("Error fetching evaluations data:", evaluationsError);
-      throw new Error("Failed to fetch evaluations data");
-    }
+    const evaluationsQuery = 'SELECT * FROM evaluations';
+    const { rows: evaluationsData } = await client.query(evaluationsQuery);
 
     const evaluationsWithMajorNames = await Promise.all(
       evaluationsData.map(async (evaluation) => {
@@ -211,26 +163,19 @@ const evaluationsDataWithSetup = async () => {
           majorIds = evaluation.major_id.split(",").map((id) => id.trim());
         }
 
-        const { data: majorData, error: majorError } = await supabase
-          .from("major")
-          .select("major_name")
-          .in("id", majorIds);
-
-        if (majorError) {
-          console.error("Error fetching major data:", majorError);
-          throw new Error("Failed to fetch major data");
-        }
-
+        const majorQuery = `
+          SELECT name FROM major WHERE id = ANY($1::int[])
+        `;
+        const { rows: majorData } = await client.query(majorQuery, [majorIds]);
         const majorNames = majorData.map((major) => major.major_name);
 
-        const setupData = await findAllSetup().then((setupData) => {
-          return setupData.find((setup) => setup.id === evaluation.setup_id);
-        });
+        const setupQuery = 'SELECT * FROM setup WHERE id = $1 LIMIT 1';
+        const { rows: setupData } = await client.query(setupQuery, [evaluation.setup_id]);
 
         return {
           ...evaluation,
           major_names: majorNames,
-          setup: setupData,
+          setup: setupData[0] || null,
         };
       })
     );

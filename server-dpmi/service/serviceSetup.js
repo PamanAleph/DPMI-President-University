@@ -1,43 +1,27 @@
-const { supabase } = require("../common/common");
+const { client } = require("../config/db");
 
+// Find all setup data with sections and questions
 const findAllSetup = async () => {
   try {
-    const { data: setupData, error: setupError } = await supabase
-      .from("setup")
-      .select("*");
-
-    if (setupError) {
-      console.error("Error fetching setup data:", setupError);
-      throw new Error("Failed to fetch setup data");
-    }
+    const setupData = await client.query("SELECT * FROM setup");
 
     const setupWithSections = await Promise.all(
-      setupData.map(async (setup) => {
-        const { data: sectionData, error: sectionError } = await supabase
-          .from("sections")
-          .select("id, section_name, sequence") 
-          .eq("setup_id", setup.id);
-
-        if (sectionError) {
-          console.error("Error fetching sections data:", sectionError);
-          throw new Error("Failed to fetch sections data");
-        }
+      setupData.rows.map(async (setup) => {
+        const sectionData = await client.query(
+          "SELECT id, section_name, sequence FROM sections WHERE setup_id = $1",
+          [setup.id]
+        );
 
         const sectionsWithQuestions = await Promise.all(
-          sectionData.map(async (section) => {
-            const { data: questionData, error: questionError } = await supabase
-              .from("questions")
-              .select("id, question_type, question_data, parent_id")
-              .eq("section_id", section.id);
-
-            if (questionError) {
-              console.error("Error fetching questions data:", questionError);
-              throw new Error("Failed to fetch questions data");
-            }
+          sectionData.rows.map(async (section) => {
+            const questionData = await client.query(
+              "SELECT id, type, question, parent_id FROM questions WHERE section_id = $1",
+              [section.id]
+            );
 
             return {
               ...section,
-              questions: questionData.map((question) => ({
+              questions: questionData.rows.map((question) => ({
                 id: question.id,
                 question_type: question.question_type,
                 question_data: question.question_data,
@@ -56,53 +40,35 @@ const findAllSetup = async () => {
 
     return setupWithSections;
   } catch (err) {
-    console.error("Internal server error:", err);
+    console.error("Error fetching setup data:", err);
     throw err;
   }
 };
 
-
+// Find setup data by ID
 const findSetupById = async (id) => {
   try {
-    const { data: setupData, error: setupError } = await supabase
-      .from("setup")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const setupData = await client.query("SELECT * FROM setup WHERE id = $1", [id]);
 
-    if (setupError) {
-      console.log(setupError);
-    }
-
-    if (!setupData) {
+    if (setupData.rowCount === 0) {
       return null;
     }
 
-    const { data: sectionData, error: sectionError } = await supabase
-      .from("sections")
-      .select("id, section_name, sequence") 
-      .eq("setup_id", setupData.id);
-
-    if (sectionError) {
-      console.error("Error fetching sections data:", sectionError);
-      throw new Error("Failed to fetch sections data");
-    }
+    const sectionData = await client.query(
+      "SELECT id, section_name, sequence FROM sections WHERE setup_id = $1",
+      [setupData.rows[0].id]
+    );
 
     const sectionsWithQuestions = await Promise.all(
-      sectionData.map(async (section) => {
-        const { data: questionData, error: questionError } = await supabase
-          .from("questions")
-          .select("id, question_type, question_data, parent_id, sequence")
-          .eq("section_id", section.id);
-
-        if (questionError) {
-          console.error("Error fetching questions data:", questionError);
-          throw new Error("Failed to fetch questions data");
-        }
+      sectionData.rows.map(async (section) => {
+        const questionData = await client.query(
+          "SELECT id, question_type, question_data, parent_id, sequence FROM questions WHERE section_id = $1",
+          [section.id]
+        );
 
         return {
           ...section,
-          questions: questionData.map((question) => ({
+          questions: questionData.rows.map((question) => ({
             id: question.id,
             question_type: question.question_type,
             question_data: question.question_data,
@@ -114,149 +80,116 @@ const findSetupById = async (id) => {
     );
 
     return {
-      ...setupData,
+      ...setupData.rows[0],
       sections: sectionsWithQuestions,
     };
   } catch (err) {
-    console.log(err);
-  }
-};
-
-const createData = async (data) => {
-  try {
-    const { data: createdData, error } = await supabase
-      .from("setup")
-      .insert(data);
-    if (error) {
-      console.log(error);
-    }
-    return createdData;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-const updateData = async (id, data) => {
-  try {
-    const { data: updatedData, error } = await supabase
-      .from("setup")
-      .update(data)
-      .eq("id", id);
-
-    if (error) {
-      console.log(error);
-    }
-    return updatedData;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-const deleteData = async (id) => {
-  try {
-    const { data, error } = await supabase.from("setup").delete().eq("id", id);
-
-    if (error) {
-      console.log(error);
-    }
-    return data;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-const findBySlug = async (slug) => {
-  try {
-    const { data: setupData, error: setupError } = await supabase
-      .from("setup")
-      .select("*")
-      .eq("slug", slug)
-      .single();
-
-    if (setupError) {
-      console.error("Error fetching setup data:", setupError);
-      return null;
-    }
-
-    const { data: sectionData, error: sectionError } = await supabase
-      .from("sections")
-      .select("id, section_name, sequence")
-      .eq("setup_id", setupData.id);
-
-    if (sectionError) {
-      console.error("Error fetching sections data:", sectionError);
-      return null;
-    }
-
-    const sectionsWithQuestions = await Promise.all(
-      sectionData.map(async (section) => {
-        const { data: questionData, error: questionError } = await supabase
-          .from("questions")
-          .select("id, question_type, question_data, parent_id, sequence")
-          .eq("section_id", section.id); 
-
-        if (questionError) {
-          console.error("Error fetching questions data:", questionError);
-          throw new Error("Failed to fetch questions data");
-        }
-
-        return {
-          ...section,
-          questions: questionData.map((question) => ({
-            id: question.id,
-            question_type: question.question_type,
-            question_data: question.question_data,
-            parent_id: question.parent_id,
-            sequence: question.sequence,
-          })),
-        };
-      })
-    );
-
-    return {
-      ...setupData,
-      sections: sectionsWithQuestions,
-    };
-  } catch (err) {
-    console.error("Internal server error:", err);
+    console.error("Error fetching setup by ID:", err);
     throw err;
   }
 };
 
-
-const getAllDataWithMajorName = async () => {
+// Create setup data
+const createData = async (data) => {
   try {
-    const { data: setupData, error: setupError } = await supabase
-      .from("setup")
-      .select("*");
+    const queryText = "INSERT INTO setup (columns) VALUES ($1, $2, $3) RETURNING *"; // Adjust columns based on your setup table
+    const createdData = await client.query(queryText, [data.column1, data.column2, data.column3]); // Adjust to your data fields
+    return createdData.rows[0];
+  } catch (err) {
+    console.error("Error creating setup data:", err);
+    throw err;
+  }
+};
 
-    if (setupError) {
-      console.error("Error fetching setup data:", setupError);
-      throw new Error("Failed to fetch setup data");
+// Update setup data
+const updateData = async (id, data) => {
+  try {
+    const queryText = "UPDATE setup SET column1 = $1, column2 = $2 WHERE id = $3 RETURNING *"; // Adjust columns
+    const updatedData = await client.query(queryText, [data.column1, data.column2, id]);
+    return updatedData.rows[0];
+  } catch (err) {
+    console.error("Error updating setup data:", err);
+    throw err;
+  }
+};
+
+// Delete setup data
+const deleteData = async (id) => {
+  try {
+    const deletedData = await client.query("DELETE FROM setup WHERE id = $1 RETURNING *", [id]);
+    return deletedData.rows[0];
+  } catch (err) {
+    console.error("Error deleting setup data:", err);
+    throw err;
+  }
+};
+
+// Find setup by slug
+const findBySlug = async (slug) => {
+  try {
+    const setupData = await client.query("SELECT * FROM setup WHERE slug = $1", [slug]);
+
+    if (setupData.rowCount === 0) {
+      return null;
     }
 
-    const setupWithMajorNames = await Promise.all(
-      setupData.map(async (setup) => {
-        const { data: majorData, error: majorError } = await supabase
-          .from("major")
-          .select("major_name")
-          .in("id", setup.major_id);
+    const sectionData = await client.query(
+      "SELECT id, section_name, sequence FROM sections WHERE setup_id = $1",
+      [setupData.rows[0].id]
+    );
 
-        if (majorError) {
-          console.error("Error fetching major data:", majorError);
-          throw new Error("Failed to fetch major data");
-        }
+    const sectionsWithQuestions = await Promise.all(
+      sectionData.rows.map(async (section) => {
+        const questionData = await client.query(
+          "SELECT id, question_type, question_data, parent_id, sequence FROM questions WHERE section_id = $1",
+          [section.id]
+        );
+
+        return {
+          ...section,
+          questions: questionData.rows.map((question) => ({
+            id: question.id,
+            question_type: question.question_type,
+            question_data: question.question_data,
+            parent_id: question.parent_id,
+            sequence: question.sequence,
+          })),
+        };
+      })
+    );
+
+    return {
+      ...setupData.rows[0],
+      sections: sectionsWithQuestions,
+    };
+  } catch (err) {
+    console.error("Error fetching setup by slug:", err);
+    throw err;
+  }
+};
+
+// Get all setup data with major names
+const getAllDataWithMajorName = async () => {
+  try {
+    const setupData = await client.query("SELECT * FROM setup");
+
+    const setupWithMajorNames = await Promise.all(
+      setupData.rows.map(async (setup) => {
+        const majorData = await client.query(
+          "SELECT major_name FROM major WHERE id = ANY($1::int[])",
+          [setup.major_id] // assuming major_id is an array of IDs
+        );
 
         return {
           ...setup,
-          major_name: majorData.map((major) => major.major_name),
+          major_name: majorData.rows.map((major) => major.major_name),
         };
       })
     );
 
     return setupWithMajorNames;
   } catch (err) {
-    console.error("Internal server error:", err);
+    console.error("Error fetching setup data with major names:", err);
     throw err;
   }
 };

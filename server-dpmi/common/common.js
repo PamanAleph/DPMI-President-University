@@ -1,11 +1,24 @@
 require("dotenv").config();
-const { createClient } = require("@supabase/supabase-js");
+const { Client } = require("pg");
 
-// Supabase client setup
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-);
+// PostgreSQL client setup
+const client = new Client({
+  host: process.env.HOST,
+  user: process.env.USER,
+  database: process.env.DATABASE,
+  password: process.env.PASSWORD,
+  port: parseInt(process.env.PORT, 10),
+});
 
-// Export the Supabase client
-module.exports = { supabase };
+// Connect to PostgreSQL
+client.connect((err) => {
+  console.log(process.env.HOST, process.env.USER, process.env.DATABASE)
+  if (err) {
+    console.error("Error connecting to PostgreSQL:", err.stack);
+  } else {
+    console.log("Connected to PostgreSQL database");
+  }
+});
+
+// Export the PostgreSQL client
+module.exports = { client };

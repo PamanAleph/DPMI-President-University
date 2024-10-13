@@ -1,37 +1,17 @@
-const { supabase } = require("../common/common");
+const { client } = require("../common/common");
 
 const findAll = async () => {
   try {
-    const { data: usersData, error: usersError } = await supabase
-      .from("users")
-      .select("id, email, username, major_id, role_id, create_at");
-
-    if (usersError) {
-      console.error("Error fetching users data:", usersError);
-      throw new Error("Failed to fetch users data");
-    }
+    const usersQuery = `SELECT id, email, username, major_id, role_id, create_at FROM users`;
+    const { rows: usersData } = await client.query(usersQuery);
 
     const usersWithMajorAndRole = await Promise.all(
       usersData.map(async (user) => {
-        const { data: majorData, error: majorError } = await supabase
-          .from("major")
-          .select("major_name")
-          .eq("id", user.major_id);
+        const majorQuery = `SELECT major_name FROM major WHERE id = $1`;
+        const { rows: majorData } = await client.query(majorQuery, [user.major_id]);
 
-        if (majorError) {
-          console.error("Error fetching major data:", majorError);
-          throw new Error("Failed to fetch major data");
-        }
-
-        const { data: roleData, error: roleError } = await supabase
-          .from("roles")
-          .select("role_name")
-          .eq("id", user.role_id);
-
-        if (roleError) {
-          console.error("Error fetching role data:", roleError);
-          throw new Error("Failed to fetch role data");
-        }
+        const roleQuery = `SELECT role_name FROM roles WHERE id = $1`;
+        const { rows: roleData } = await client.query(roleQuery, [user.role_id]);
 
         return {
           ...user,
@@ -50,43 +30,23 @@ const findAll = async () => {
 
 const findById = async (id) => {
   try {
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("id, email, username, major_id, role_id, create_at")
-      .eq("id", id)
-      .single();
+    const userQuery = `SELECT id, email, username, major_id, role_id, create_at FROM users WHERE id = $1`;
+    const { rows: userData } = await client.query(userQuery, [id]);
 
-    if (userError) {
-      console.error(userError);
-      throw new Error("Failed to fetch user data");
+    if (userData.length === 0) {
+      throw new Error("User not found");
     }
 
-    const { data: majorData, error: majorError } = await supabase
-      .from("major")
-      .select("major_name")
-      .eq("id", userData.major_id)
-      .single();
+    const majorQuery = `SELECT major_name FROM major WHERE id = $1`;
+    const { rows: majorData } = await client.query(majorQuery, [userData[0].major_id]);
 
-    if (majorError) {
-      console.error("Error fetching major data:", majorError);
-      throw new Error("Failed to fetch major data");
-    }
-
-    const { data: roleData, error: roleError } = await supabase
-      .from("roles")
-      .select("role_name")
-      .eq("id", userData.role_id)
-      .single();
-
-    if (roleError) {
-      console.error("Error fetching role data:", roleError);
-      throw new Error("Failed to fetch role data");
-    }
+    const roleQuery = `SELECT role_name FROM roles WHERE id = $1`;
+    const { rows: roleData } = await client.query(roleQuery, [userData[0].role_id]);
 
     return {
-      ...userData,
-      major_name: majorData ? majorData.major_name : null,
-      role_name: roleData ? roleData.role_name : null,
+      ...userData[0],
+      major_name: majorData.length > 0 ? majorData[0].major_name : null,
+      role_name: roleData.length > 0 ? roleData[0].role_name : null,
     };
   } catch (error) {
     console.error("Internal server error:", error);
@@ -96,18 +56,15 @@ const findById = async (id) => {
 
 const updateUser = async (id, updates) => {
   try {
-    const { data: updatedUserData, error: updateError } = await supabase
-      .from("users")
-      .update({ ...updates })
-      .eq("id", id)
-      .single();
+    const updateFields = Object.keys(updates)
+      .map((key, index) => `${key} = $${index + 1}`)
+      .join(", ");
+    const values = Object.values(updates);
 
-    if (updateError) {
-      console.error("Error updating user data:", updateError);
-      throw new Error("Failed to update user data");
-    }
+    const updateQuery = `UPDATE users SET ${updateFields} WHERE id = $${values.length + 1} RETURNING *`;
+    const { rows: updatedUserData } = await client.query(updateQuery, [...values, id]);
 
-    return updatedUserData;
+    return updatedUserData[0];
   } catch (error) {
     console.error("Internal server error:", error);
     throw error;
@@ -116,15 +73,8 @@ const updateUser = async (id, updates) => {
 
 const deleteUser = async (id) => {
   try {
-    const { error: deleteError } = await supabase
-      .from("users")
-      .delete()
-      .eq("id", id);
-
-    if (deleteError) {
-      console.error("Error deleting user data:", deleteError);
-      throw new Error("Failed to delete user data");
-    }
+    const deleteQuery = `DELETE FROM users WHERE id = $1`;
+    await client.query(deleteQuery, [id]);
 
     return `User with id ${id} deleted successfully`;
   } catch (error) {

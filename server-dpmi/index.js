@@ -20,6 +20,10 @@ const routerAuth = require("./routes/authRoute")
 const routerUsers = require("./routes/userRoutes")
 const routerRole = require('./routes/roleRoute')
 
+const errorHandler = require("./middleware/errorHandler");
+
+app.use(errorHandler);
+
 app.use("/api/v1/major", routerMajor);
 app.use("/api/v1/setup", routerSetup);
 app.use("/api/v1/sections", routerSections);
