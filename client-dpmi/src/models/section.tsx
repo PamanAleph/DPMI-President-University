@@ -3,7 +3,7 @@ import Questions from "./questions";
 interface Sections {
     id: number;
     setup_id: number;
-    section_name: string;
+    name: string;
     sequence: number;
     questions: Questions[];
 }

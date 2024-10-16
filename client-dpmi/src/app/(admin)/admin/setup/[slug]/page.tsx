@@ -59,7 +59,7 @@ export default async function SetupDetailsPage({
                     {section.id}
                   </td>
                   <td className="py-2 px-4 text-gray-600 border border-gray-300">
-                    {section.section_name}
+                    {section.name}
                   </td>
                   <td className="py-2 px-4 text-gray-600 border border-gray-300">
                     {section.sequence}
@@ -89,10 +89,10 @@ export default async function SetupDetailsPage({
                               {question.parent_id || "-"}
                             </td>
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
-                              {question.question_type}
+                              {question.type}
                             </td>
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
-                              {question.question_data}
+                              {question.question}
                             </td>
                           </tr>
                         ))}

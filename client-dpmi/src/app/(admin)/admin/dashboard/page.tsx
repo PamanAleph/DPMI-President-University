@@ -56,7 +56,6 @@ export default async function page() {
 
     return (
       <section>
-        {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           {statistickData.map((stat, index) => (
             <StatisticCard
