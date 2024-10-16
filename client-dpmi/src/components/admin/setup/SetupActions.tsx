@@ -20,9 +20,9 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
     const getMajors = async () => {
       try {
         const majorsData = await fetchMajor();
-        majorsData.map((major: { id: number; major_name: string }) => ({
+        majorsData.map((major: { id: number; name: string }) => ({
           value: major.id,
-          label: major.major_name,
+          label: major.name,
         }));
       } catch (error) {
         console.error("Failed to fetch majors:", error);
@@ -145,8 +145,8 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
         if (majorSelectContainer) {
           const response = await fetchMajor();
           const majorOptions = response.map(
-            (major: { id: number; major_name: string }) => ({
-              label: major.major_name,
+            (major: { id: number; name: string }) => ({
+              label: major.name,
               value: major.id,
             })
           );

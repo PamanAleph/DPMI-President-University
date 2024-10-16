@@ -15,17 +15,14 @@ const findAllSetup = async () => {
         const sectionsWithQuestions = await Promise.all(
           sectionData.rows.map(async (section) => {
             const questionData = await client.query(
-              "SELECT id, type, question, parent_id FROM questions WHERE section_id = $1",
+              "SELECT question FROM questions WHERE section_id = $1",
               [section.id]
             );
-
             return {
               ...section,
               questions: questionData.rows.map((question) => ({
-                id: question.id,
-                question_type: question.question_type,
-                question_data: question.question_data,
-                parent_id: question.parent_id,
+                id: question.question,
+                
               })),
             };
           })
@@ -62,7 +59,7 @@ const findSetupById = async (id) => {
     const sectionsWithQuestions = await Promise.all(
       sectionData.rows.map(async (section) => {
         const questionData = await client.query(
-          "SELECT id, question_type, question_data, parent_id, sequence FROM questions WHERE section_id = $1",
+          "SELECT id, type, question_description, parent_id, sequence FROM questions WHERE section_id = $1",
           [section.id]
         );
 
@@ -70,8 +67,8 @@ const findSetupById = async (id) => {
           ...section,
           questions: questionData.rows.map((question) => ({
             id: question.id,
-            question_type: question.question_type,
-            question_data: question.question_data,
+            type: question.question_type,
+            question_description: question.question_description,
             parent_id: question.parent_id,
             sequence: question.sequence,
           })),
@@ -92,8 +89,8 @@ const findSetupById = async (id) => {
 // Create setup data
 const createData = async (data) => {
   try {
-    const queryText = "INSERT INTO setup (columns) VALUES ($1, $2, $3) RETURNING *"; // Adjust columns based on your setup table
-    const createdData = await client.query(queryText, [data.column1, data.column2, data.column3]); // Adjust to your data fields
+    const queryText = "INSERT INTO setup (name, slug) VALUES ($1, $2) RETURNING *"; 
+    const createdData = await client.query(queryText, [data.name, data.slug]); 
     return createdData.rows[0];
   } catch (err) {
     console.error("Error creating setup data:", err);
@@ -104,8 +101,8 @@ const createData = async (data) => {
 // Update setup data
 const updateData = async (id, data) => {
   try {
-    const queryText = "UPDATE setup SET column1 = $1, column2 = $2 WHERE id = $3 RETURNING *"; // Adjust columns
-    const updatedData = await client.query(queryText, [data.column1, data.column2, id]);
+    const queryText = "UPDATE setup SET name = $1, slug = $2 WHERE id = $3 RETURNING *"; // Adjust columns
+    const updatedData = await client.query(queryText, [data.name, data.slug, id]);
     return updatedData.rows[0];
   } catch (err) {
     console.error("Error updating setup data:", err);
@@ -124,49 +121,62 @@ const deleteData = async (id) => {
   }
 };
 
-// Find setup by slug
+// Find setup by slug with related sections and questions
 const findBySlug = async (slug) => {
   try {
     const setupData = await client.query("SELECT * FROM setup WHERE slug = $1", [slug]);
 
     if (setupData.rowCount === 0) {
-      return null;
+      throw new Error(`Setup not found for slug: ${slug}`);
     }
 
+    const setup = setupData.rows[0];
+
+    // Fetch sections related to the setup
     const sectionData = await client.query(
       "SELECT id, section_name, sequence FROM sections WHERE setup_id = $1",
-      [setupData.rows[0].id]
+      [setup.id]
     );
 
     const sectionsWithQuestions = await Promise.all(
       sectionData.rows.map(async (section) => {
         const questionData = await client.query(
-          "SELECT id, question_type, question_data, parent_id, sequence FROM questions WHERE section_id = $1",
+          "SELECT * FROM questions WHERE section_id = $1",
           [section.id]
         );
+        
+        const questions = questionData.rows.map((question) => ({
+          id: question.id,
+          parent_id: question.parent_id,
+          sequence: question.sequence,
+          question: question.question,
+          type: question.type,
+
+         
+        }));
 
         return {
-          ...section,
-          questions: questionData.rows.map((question) => ({
-            id: question.id,
-            question_type: question.question_type,
-            question_data: question.question_data,
-            parent_id: question.parent_id,
-            sequence: question.sequence,
-          })),
+          id: section.id,
+          name: section.section_name,
+          sequence: section.sequence,
+          questions: questions,
         };
       })
     );
 
     return {
-      ...setupData.rows[0],
-      sections: sectionsWithQuestions,
+        id: setup.id,
+        name: setup.name,
+        create_at: setup.create_at,
+        slug: setup.slug,
+        sections: sectionsWithQuestions,
     };
-  } catch (err) {
-    console.error("Error fetching setup by slug:", err);
-    throw err;
+  } catch (error) {
+    console.error("Error in findBySlug:", error.message);
+    throw new Error("Failed to fetch setup by slug");
   }
 };
+
 
 // Get all setup data with major names
 const getAllDataWithMajorName = async () => {
