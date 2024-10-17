@@ -3,39 +3,58 @@ const { client } = require("../config/db");
 // Find all setup data with sections and questions
 const findAllSetup = async () => {
   try {
-    const setupData = await client.query("SELECT * FROM setup");
+    const setupData = await client.query(`
+      SELECT 
+        s.id AS setup_id, 
+        s.name AS setup_name, 
+        s.slug AS setup_slug, 
+        s.create_at AS setup_create_at,
+        sec.id AS section_id,
+        sec.name AS section_name,
+        sec.sequence AS section_sequence,
+        q.id AS question_id,
+        q.question AS question_text
+      FROM setup s
+      LEFT JOIN sections sec ON s.id = sec.setup_id
+      LEFT JOIN questions q ON sec.id = q.section_id
+    `);
 
-    const setupWithSections = await Promise.all(
-      setupData.rows.map(async (setup) => {
-        const sectionData = await client.query(
-          "SELECT id, name, sequence FROM sections WHERE setup_id = $1",
-          [setup.id]
-        );
+    const setupsMap = new Map();
 
-        const sectionsWithQuestions = await Promise.all(
-          sectionData.rows.map(async (section) => {
-            const questionData = await client.query(
-              "SELECT question FROM questions WHERE section_id = $1",
-              [section.id]
-            );
-            return {
-              ...section,
-              questions: questionData.rows.map((question) => ({
-                id: question.question,
-                
-              })),
-            };
-          })
-        );
+    setupData.rows.forEach((row) => {
+      if (!setupsMap.has(row.setup_id)) {
+        setupsMap.set(row.setup_id, {
+          id: row.setup_id,
+          name: row.setup_name,
+          slug: row.setup_slug,
+          create_at: row.setup_create_at,
+          sections: [],
+        });
+      }
 
-        return {
-          ...setup,
-          sections: sectionsWithQuestions,
+      const currentSetup = setupsMap.get(row.setup_id);
+
+      let section = currentSetup.sections.find((sec) => sec.id === row.section_id);
+      if (!section && row.section_id) {
+        section = {
+          id: row.section_id,
+          name: row.section_name,
+          sequence: row.section_sequence,
+          questions: [],
         };
-      })
-    );
+        currentSetup.sections.push(section);
+      }
 
-    return setupWithSections;
+      if (section && row.question_id) {
+        section.questions.push({
+          id: row.question_id,
+          question: row.question_text,
+        });
+      }
+    });
+
+    const setups = Array.from(setupsMap.values());
+    return setups;
   } catch (err) {
     console.error("Error fetching setup data:", err);
     throw err;
@@ -45,41 +64,61 @@ const findAllSetup = async () => {
 // Find setup data by ID
 const findSetupById = async (id) => {
   try {
-    const setupData = await client.query("SELECT * FROM setup WHERE id = $1", [id]);
+    const setupData = await client.query(`
+      SELECT 
+        s.id AS setup_id, 
+        s.name AS setup_name, 
+        s.slug AS setup_slug,
+        sec.id AS section_id, 
+        sec.section_name AS section_name,
+        sec.sequence AS section_sequence,
+        q.id AS question_id,
+        q.type AS question_type,
+        q.question_description AS question_description,
+        q.parent_id AS question_parent_id,
+        q.sequence AS question_sequence
+      FROM setup s
+      LEFT JOIN sections sec ON s.id = sec.setup_id
+      LEFT JOIN questions q ON sec.id = q.section_id
+      WHERE s.id = $1
+    `, [id]);
 
     if (setupData.rowCount === 0) {
       return null;
     }
 
-    const sectionData = await client.query(
-      "SELECT id, section_name, sequence FROM sections WHERE setup_id = $1",
-      [setupData.rows[0].id]
-    );
-
-    const sectionsWithQuestions = await Promise.all(
-      sectionData.rows.map(async (section) => {
-        const questionData = await client.query(
-          "SELECT id, type, question_description, parent_id, sequence FROM questions WHERE section_id = $1",
-          [section.id]
-        );
-
-        return {
-          ...section,
-          questions: questionData.rows.map((question) => ({
-            id: question.id,
-            type: question.question_type,
-            question_description: question.question_description,
-            parent_id: question.parent_id,
-            sequence: question.sequence,
-          })),
-        };
-      })
-    );
-
-    return {
-      ...setupData.rows[0],
-      sections: sectionsWithQuestions,
+    const setupMap = {
+      id: setupData.rows[0].setup_id,
+      name: setupData.rows[0].setup_name,
+      slug: setupData.rows[0].setup_slug,
+      sections: []
     };
+
+    const sectionMap = new Map();
+
+    setupData.rows.forEach(row => {
+      if (!sectionMap.has(row.section_id) && row.section_id) {
+        sectionMap.set(row.section_id, {
+          id: row.section_id,
+          section_name: row.section_name,
+          sequence: row.section_sequence,
+          questions: []
+        });
+        setupMap.sections.push(sectionMap.get(row.section_id));
+      }
+
+      if (row.question_id) {
+        sectionMap.get(row.section_id).questions.push({
+          id: row.question_id,
+          type: row.question_type,
+          question_description: row.question_description,
+          parent_id: row.question_parent_id,
+          sequence: row.question_sequence
+        });
+      }
+    });
+
+    return setupMap;
   } catch (err) {
     console.error("Error fetching setup by ID:", err);
     throw err;

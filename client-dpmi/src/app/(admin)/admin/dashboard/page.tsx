@@ -88,7 +88,7 @@ export default async function page() {
                       Related Setup: {evaluation.setup_id}
                     </p>
                     <p className="text-sm text-gray-500 mt-1">
-                      Related Major: {evaluation.major_names.join(", ")}
+                      Related Major: {evaluation.major_name}
                     </p>
                     <p className="text-sm text-gray-500 mt-1">
                       End Date:{" "}

@@ -19,11 +19,11 @@ const findById = async (id) => {
 };
 
 const createData = async (data) => {
-  const { question_text, question_type, section_id } = data;  // adjust based on the actual columns
+  const { question, type, section_id } = data;  
   try {
     const result = await client.query(
-      "INSERT INTO questions (question_text, question_type, section_id) VALUES ($1, $2, $3) RETURNING *",
-      [question_text, question_type, section_id]
+      "INSERT INTO questions (question, type, section_id) VALUES ($1, $2, $3) RETURNING *",
+      [question, type, section_id]
     );
     return result.rows[0];
   } catch (err) {
@@ -32,11 +32,11 @@ const createData = async (data) => {
 };
 
 const updateData = async (id, data) => {
-  const { question_text, question_type, section_id } = data; // adjust based on actual columns
+  const { question, type, section_id } = data; 
   try {
     const result = await client.query(
-      "UPDATE questions SET question_text = $1, question_type = $2, section_id = $3 WHERE id = $4 RETURNING *",
-      [question_text, question_type, section_id, id]
+      "UPDATE questions SET question = $1, type = $2, section_id = $3 WHERE id = $4 RETURNING *",
+      [question, type, section_id, id]
     );
     return result.rows[0];
   } catch (err) {
