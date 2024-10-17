@@ -22,7 +22,7 @@ export default function EvaluationTable({ evaluations }: EvaluationTableProps) {
               Semester
             </th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-              Major(s)
+              Major
             </th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
               End Date
@@ -46,12 +46,7 @@ export default function EvaluationTable({ evaluations }: EvaluationTableProps) {
                 {evaluation.semester}
               </td>
               <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[200px]">
-                {evaluation.major_names.map((name, index) => (
-                  <div key={index}>
-                    {name}
-                    {index < evaluation.major_names.length - 1 ? "," : ""}
-                  </div>
-                ))}
+                {evaluation.major_name}
               </td>
               <td className="whitespace-nowrap px-4 py-2 text-gray-700 max-w-[200px]">
                 {new Date(evaluation.end_date).toLocaleDateString()}

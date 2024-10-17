@@ -114,7 +114,7 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
 
   const handleGenerateEvaluation = async () => {
     let selectedMajors: { label: string; value: number }[] = [];
-
+  
     const { value: formValues } = await Swal.fire({
       title: "Generate Evaluation",
       html: `
@@ -131,17 +131,16 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
         const end_date = (
           document.getElementById("end-date") as HTMLInputElement
         )?.value;
-
+  
         if (!majorIds.length || !semester || !end_date) {
           Swal.showValidationMessage("Please fill all fields");
           return null;
         }
-
+  
         return { majorIds, semester, end_date };
       },
       didOpen: async () => {
-        const majorSelectContainer =
-          document.getElementById("multi-select-major");
+        const majorSelectContainer = document.getElementById("multi-select-major");
         if (majorSelectContainer) {
           const response = await fetchMajor();
           const majorOptions = response.map(
@@ -150,7 +149,7 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
               value: major.id,
             })
           );
-
+  
           const root = createRoot(majorSelectContainer);
           root.render(
             <Select
@@ -159,10 +158,7 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
               className="swal2-select"
               placeholder="Select Majors"
               onChange={(selectedOptions) => {
-                selectedMajors = selectedOptions as {
-                  label: string;
-                  value: number;
-                }[];
+                selectedMajors = selectedOptions as { label: string; value: number }[];
               }}
             />
           );
@@ -172,64 +168,51 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
       confirmButtonText: "Generate",
       cancelButtonText: "Cancel",
     });
-
+  
     if (formValues) {
-      const majorIds = Array.isArray(formValues.majorIds)
-        ? formValues.majorIds
-        : [];
+      const majorIds = Array.isArray(formValues.majorIds) ? formValues.majorIds : [];
       try {
-        const evaluationCheckData = {
-          setupId,
-          majorIds,
-          semester: formValues.semester,
-          endDate: formValues.end_date,
-        };
-        const evaluationExists = await checkEvaluation(evaluationCheckData);
-
-        if (evaluationExists) {
-          Swal.fire(
-            "Error",
-            "An evaluation for the selected majors, semester, and end date already exists.",
-            "error"
-          );
-          return;
+        for (const majorId of majorIds) {
+          const evaluationCheckData = {
+            setupId,
+            majorIds: [majorId],  // Mengubah menjadi array
+            semester: formValues.semester,
+            endDate: new Date(formValues.end_date),
+          };
+          const evaluationExists = await checkEvaluation(evaluationCheckData);
+  
+          if (evaluationExists) {
+            Swal.fire(
+              "Error",
+              `An evaluation for major ${majorId}, semester ${formValues.semester}, and end date already exists.`,
+              "error"
+            );
+            continue; // Skip jika sudah ada
+          }
+  
+          // Buat objek evaluationData untuk setiap majorId
+          const evaluationData = {
+            setup_id: setupId,
+            major_id: majorId, // Kirim satu majorId per evaluasi
+            semester: formValues.semester,
+            end_date: new Date(formValues.end_date),
+          };
+  
+          // Panggil createEvaluation untuk setiap majorId
+          await createEvaluation(evaluationData);
         }
-
-        await createEvaluation({
-          setup_id: setupId,
-          major_id: formValues.majorIds,
-          semester: formValues.semester,
-          end_date: new Date(formValues.end_date),
-        });
-
-        Swal.fire(
-          "Success!",
-          "The evaluation has been generated successfully.",
-          "success"
-        ).then(() => {
+  
+        Swal.fire("Success!", "Evaluations generated successfully.", "success").then(() => {
           window.location.reload();
         });
       } catch (error: unknown) {
-        if (error instanceof Error && error.message.includes("409")) {
-          Swal.fire(
-            "Error",
-            "An evaluation for the selected majors, semester, and end date already exists.",
-            "error"
-          );
-        } else {
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred";
-          Swal.fire(
-            "Error",
-            `Failed to generate the evaluation: ${errorMessage}`,
-            "error"
-          );
-        }
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        Swal.fire("Error", `Failed to generate the evaluation: ${errorMessage}`, "error");
       }
     }
   };
+  
+  
 
   return (
     <section className="flex gap-4 justify-center">

@@ -8,7 +8,7 @@ const findAllSetup = async () => {
     const setupWithSections = await Promise.all(
       setupData.rows.map(async (setup) => {
         const sectionData = await client.query(
-          "SELECT id, section_name, sequence FROM sections WHERE setup_id = $1",
+          "SELECT id, name, sequence FROM sections WHERE setup_id = $1",
           [setup.id]
         );
 
@@ -121,7 +121,7 @@ const deleteData = async (id) => {
   }
 };
 
-// Find setup by slug with related sections and questions
+// Find by slug
 const findBySlug = async (slug) => {
   try {
     const setupData = await client.query("SELECT * FROM setup WHERE slug = $1", [slug]);
@@ -131,10 +131,8 @@ const findBySlug = async (slug) => {
     }
 
     const setup = setupData.rows[0];
-
-    // Fetch sections related to the setup
     const sectionData = await client.query(
-      "SELECT id, section_name, sequence FROM sections WHERE setup_id = $1",
+      "SELECT id, name, sequence FROM sections WHERE setup_id = $1",
       [setup.id]
     );
 
