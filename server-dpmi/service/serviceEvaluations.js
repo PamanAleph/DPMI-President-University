@@ -121,18 +121,21 @@ const updateData = async (id, data) => {
       RETURNING *
     `;
     const values = [
-      data.setup_id,
-      data.major_id,
+      data.setup_id, // Integer value for setup_id
+      data.major_id, // Single integer value for major_id
       data.semester,
       data.end_date,
       id,
     ];
+
     const { rows: updatedData } = await client.query(updateQuery, values);
     return updatedData[0];
   } catch (err) {
     console.log(err);
+    throw err;
   }
 };
+
 
 const deleteData = async (id) => {
   try {

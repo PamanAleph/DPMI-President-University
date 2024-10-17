@@ -4,8 +4,8 @@ interface Evaluation {
     major_id: number;       
     semester: string;       
     end_date: Date;          
-    major_name: string;   
-    setup_name: string;      
+    major_name?: string;   
+    setup_name?: string;      
 }
 
 export default Evaluation;
