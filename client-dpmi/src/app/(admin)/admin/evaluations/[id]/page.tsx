@@ -41,7 +41,7 @@ export default async function EvaluationDetailsPage({
             </p>
             <p>
               <span className="font-semibold">Major ID:</span>{" "}
-              {evaluation.major_id.join(", ")}
+              {evaluation.major_id}
             </p>
             <p>
               <span className="font-semibold">Semester:</span>{" "}
@@ -57,14 +57,12 @@ export default async function EvaluationDetailsPage({
         {/* Major Names */}
         <div className="bg-white p-6 shadow-md rounded-lg mb-6">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">
-            Major Names
+            Major Name
           </h2>
           <ul className="space-y-2">
-            {evaluation.major_names.map((major, index) => (
-              <li key={index} className="text-gray-600">
-                {major}
+              <li className="text-gray-600">
+                {evaluation.major_name}
               </li>
-            ))}
           </ul>
         </div>
       </div>
@@ -112,7 +110,7 @@ export default async function EvaluationDetailsPage({
                     {section.id}
                   </td> */}
                   <td className="py-2 px-4 text-gray-600 border border-gray-300">
-                    {section.section_name}
+                    {section.name}
                   </td>
                   <td className="border border-gray-300">
                     {/* Table for Questions */}
@@ -152,10 +150,10 @@ export default async function EvaluationDetailsPage({
                               {question.parent_id || "-"}
                             </td>
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
-                              {question.question_type}
+                              {question.type}
                             </td>
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
-                              {question.question_data}
+                              {question.question}
                             </td>
                           </tr>
                         ))}
