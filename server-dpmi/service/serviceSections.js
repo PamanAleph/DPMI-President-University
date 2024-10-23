@@ -21,15 +21,19 @@ const findById = async (id) => {
 };
 
 const createData = async (data) => {
-  const { name, slug, description } = data;
+  const { setup_id, name, sequence } = data;
   try {
+    if (!setup_id) {
+      throw new Error("setup_id is null or undefined");
+    }
     const result = await client.query(
-      "INSERT INTO sections (name, slug, description) VALUES ($1, $2, $3) RETURNING *",
-      [name, slug, description]
+      "INSERT INTO sections (setup_id, name, sequence) VALUES ($1, $2, $3) RETURNING *",
+      [setup_id, name, sequence]
     );
     return result.rows[0];
   } catch (err) {
-    console.log(err);
+    console.log("Error in createData:", err);
+    throw err;
   }
 };
 

@@ -9,7 +9,7 @@ interface SetupDetails {
     start_date: Date;
     end_date: Date;
     create_at: Date;
-    major_name: string[];
+    major_name: string;
     sections: Sections[];
 }
 

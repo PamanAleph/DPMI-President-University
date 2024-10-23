@@ -28,29 +28,28 @@ const findAll = async () => {
 
 const findById = async (id) => {
   try {
+    const numericId = parseInt(id, 10);
+
+    if (isNaN(numericId)) {
+      throw new Error("ID must be a valid integer");
+    }
+
     const evaluationQuery = `
       SELECT e.*, m.name AS major_name, s.*, 
-        sec.id AS section_id,
-        json_agg(json_build_object(
-          'id', q.id, 
-          'section_id', q.section_id, 
-          'question', q.question, 
-          'type', q.type, 
-          'parent_id', q.parent_id, 
-          'sequence', q.sequence
-        )) AS questions
+        sec.id AS section_id, sec.name AS section_name, sec.sequence AS section_sequence,
+        q.id AS question_id, q.question, q.type, q.parent_id, q.sequence AS question_sequence
       FROM evaluations e
       LEFT JOIN major m ON e.major_id = m.id
       LEFT JOIN setup s ON e.setup_id = s.id
       LEFT JOIN sections sec ON s.id = sec.setup_id
       LEFT JOIN questions q ON sec.id = q.section_id
       WHERE e.id = $1
-      GROUP BY e.id, m.name, s.id, sec.id
-      ORDER BY sec.sequence
-      LIMIT 1;
+      ORDER BY sec.sequence, q.sequence;
     `;
 
-    const { rows: evaluationData } = await client.query(evaluationQuery, [id]);
+    const { rows: evaluationData } = await client.query(evaluationQuery, [
+      numericId,
+    ]);
 
     if (!evaluationData.length) {
       return null;
@@ -58,6 +57,35 @@ const findById = async (id) => {
 
     const evaluation = evaluationData[0];
 
+    // Group sections and questions
+    const sectionsMap = {};
+    evaluationData.forEach((row) => {
+      if (!sectionsMap[row.section_id]) {
+        sectionsMap[row.section_id] = {
+          id: row.section_id,
+          setup_id: evaluation.setup_id,
+          name: row.section_name || `Section ${row.section_sequence}`,
+          sequence: row.section_sequence,
+          questions: [],
+        };
+      }
+
+      if (row.question_id) {
+        sectionsMap[row.section_id].questions.push({
+          id: row.question_id,
+          section_id: row.section_id,
+          question: row.question,
+          type: row.type,
+          parent_id: row.parent_id,
+          sequence: row.question_sequence,
+        });
+      }
+    });
+
+    // Convert sectionsMap to an array
+    const sections = Object.values(sectionsMap);
+
+    // Construct the response object
     return {
       id: evaluation.id,
       setup_id: evaluation.setup_id,
@@ -70,23 +98,7 @@ const findById = async (id) => {
         name: evaluation.name,
         create_at: evaluation.create_at,
         slug: evaluation.slug,
-        sections: evaluation.questions
-          ? evaluation.questions.reduce((acc, question) => {
-              let section = acc.find((sec) => sec.id === question.section_id);
-              if (!section) {
-                section = {
-                  id: question.section_id,
-                  setup_id: evaluation.setup_id,
-                  name: `Section ${question.sequence}`,
-                  sequence: question.sequence,
-                  questions: [],
-                };
-                acc.push(section);
-              }
-              section.questions.push(question);
-              return acc;
-            }, [])
-          : [],
+        sections: sections,
       },
     };
   } catch (err) {
@@ -121,8 +133,8 @@ const updateData = async (id, data) => {
       RETURNING *
     `;
     const values = [
-      data.setup_id, // Integer value for setup_id
-      data.major_id, // Single integer value for major_id
+      data.setup_id, 
+      data.major_id, 
       data.semester,
       data.end_date,
       id,
@@ -135,7 +147,6 @@ const updateData = async (id, data) => {
     throw err;
   }
 };
-
 
 const deleteData = async (id) => {
   try {
@@ -167,7 +178,7 @@ const checkExistingEvaluation = async (
     semester,
     endDate,
     majorIds[0],
-  ]); 
+  ]);
 
   const existingEvaluation = existingEvaluations.find((evaluation) => {
     return (

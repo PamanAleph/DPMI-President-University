@@ -21,16 +21,17 @@ export const getSection = async (id: string) => {
   }
 };
 
-export const createSection = async (section: unknown) => {
+export const createSection = async (sections: Omit<Sections, "id" | "questions">[]) => {
   try {
-    const response = await axios.post(API_SECTION, section);
+    const response = await axios.post(API_SECTION, sections);
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error("Failed to create sections:", error);
+    throw error;
   }
 };
 
-export const updateSection = async (id: string, section: unknown) => {
+export const updateSection = async (id: number, section: Sections) => {
   try {
     const response = await axios.put(`${API_SECTION}/${id}`, section);
     return response.data;

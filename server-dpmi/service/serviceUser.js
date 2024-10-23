@@ -3,11 +3,10 @@ const { client } = require("../common/common");
 const findAll = async () => {
   try {
     const usersQuery = `
-      SELECT u.id, u.email, u.username, u.major_id, u.role_id, u.create_at, 
+      SELECT u.id, u.email, u.username, u.role_id, 
              m.major_name, 
              r.role_name
       FROM users u
-      LEFT JOIN major m ON u.major_id = m.id
       LEFT JOIN roles r ON u.role_id = r.id
     `;
     

@@ -91,7 +91,7 @@ export const checkEvaluation = async ({
   }
 };
 
-export const fetchEvaluationById = async (evaluationId: string) => {
+export const fetchEvaluationById = async (evaluationId: number) => {
   try {
     const response = await axios.get<{ data: EvaluationDetails }>(
       `${API_EVALUATION}/id/${evaluationId}`

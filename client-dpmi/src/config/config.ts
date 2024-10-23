@@ -7,3 +7,5 @@ export const API_EVALUATION = BASE_URL + "/evaluations"
 export const API_USER = BASE_URL + "/users"
 export const API_ROLE = BASE_URL + "/roles"
 export const API_AUTH = BASE_URL + "/auth"
+
+export const USER_SECRECTKEY = process.env.USER_SECRETKEY || "default-secret-key";

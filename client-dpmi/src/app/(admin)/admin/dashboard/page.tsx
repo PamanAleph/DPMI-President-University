@@ -2,7 +2,6 @@ import StatisticCard from "@/components/admin/StatisticCard";
 import { fetchEvaluations } from "@/service/api/evaluation";
 import { fetchMajor } from "@/service/api/major";
 import { fetchSetup } from "@/service/api/setup";
-import { GetUserList } from "@/service/api/users";
 import {
   AcademicCapIcon,
   ClipboardDocumentListIcon,
@@ -13,17 +12,15 @@ import React from "react";
 
 export default async function page() {
   try {
-    const [majors, evaluations, setups, users] = await Promise.all([
+    const [majors, evaluations, setups] = await Promise.all([
       fetchMajor(),
       fetchEvaluations(),
       fetchSetup(),
-      GetUserList(),
     ]);
 
     const totalMajors = majors.length;
     const totalEvaluations = evaluations.length;
     const totalSetups = setups.length;
-    const totalUsers = users.length;
 
     const recentSetups = setups.sort((a, b) => b.id - a.id).slice(0, 3);
 
@@ -47,16 +44,11 @@ export default async function page() {
         value: totalSetups,
         icon: <CogIcon className="h-6 w-6" />,
       },
-      {
-        label: "Users",
-        value: totalUsers,
-        icon: <CogIcon className="h-6 w-6" />,
-      },
     ];
 
     return (
       <section>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {statistickData.map((stat, index) => (
             <StatisticCard
               key={index}

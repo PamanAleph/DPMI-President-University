@@ -11,7 +11,7 @@ interface SectionDetailsProps {
 }
 
 export default function SectionDetails({onNext}:SectionDetailsProps) {
-  const [sections, setSections] = useState([{ section_name: "" }]);
+  const [sections, setSections] = useState([{ name: "" }]);
   const [setupId, setSetupId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -34,12 +34,12 @@ export default function SectionDetails({onNext}:SectionDetailsProps) {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const newSections = [...sections];
-    newSections[index].section_name = event.target.value;
+    newSections[index].name = event.target.value;
     setSections(newSections);
   };
 
   const addSection = () => {
-    setSections([...sections, { section_name: "" }]);
+    setSections([...sections, { name: "" }]);
   };
 
   const removeSection = (index: number) => {
@@ -63,7 +63,7 @@ export default function SectionDetails({onNext}:SectionDetailsProps) {
 
       await createSection(sectionsData);
       Swal.fire("Success", "Sections added successfully!", "success");
-      setSections([{ section_name: "" }]);
+      setSections([{ name: "" }]);
       onNext();
     } catch (error) {
       console.error("Failed to create sections:", error);
@@ -85,7 +85,7 @@ export default function SectionDetails({onNext}:SectionDetailsProps) {
               name="section_name"
               className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder={`Section Name ${index + 1}`}
-              value={section.section_name}
+              value={section.name}
               onChange={(e) => handleSectionChange(index, e)}
               required
             />

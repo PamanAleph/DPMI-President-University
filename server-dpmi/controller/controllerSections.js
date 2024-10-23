@@ -58,13 +58,37 @@ const getDataById = async (req, res) => {
 
 const createNewData = async (req, res) => {
   try {
-    const data = await createData(req.body);
+    const sections = req.body;
+    if (!Array.isArray(sections) || sections.length === 0) {
+      return res.status(400).json({
+        response: {
+          status: "error",
+          message: "No sections provided",
+        },
+        data: null,
+      });
+    }
+    const createdSections = [];
+    for (const section of sections) {
+      const { setup_id, name, sequence } = section;
+      if (!setup_id || !name || !sequence) {
+        return res.status(400).json({
+          response: {
+            status: "error",
+            message: "Invalid section data",
+          },
+          data: null,
+        });
+      }
+      const createdSection = await createData(section);
+      createdSections.push(createdSection);
+    }
     res.status(201).json({
       response: {
         status: "success",
-        message: "Data created successfully",
+        message: "Sections created successfully",
       },
-      data: data,
+      data: createdSections,
     });
   } catch (err) {
     console.error("Internal server error:", err);
@@ -78,6 +102,7 @@ const createNewData = async (req, res) => {
     });
   }
 };
+
 
 const updateExistingData = async (req, res) => {
   const { id } = req.params;
