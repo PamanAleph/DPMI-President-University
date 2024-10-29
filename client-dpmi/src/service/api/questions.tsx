@@ -21,22 +21,23 @@ export const getQuestionById = async (id: string) => {
 };
 
 export const createQuestion = async (
-  questionData: Omit<Questions, "id"> 
-): Promise<Questions[]> => {
+  questionData: Omit<Questions, "id">
+): Promise<Questions> => {
   try {
-    const response = await axios.post<{ data: Questions[] }>(
+    const response = await axios.post<{ data: Questions }>(
       `${API_QUESTION}`,
       questionData,
       {
         headers: { "Content-Type": "application/json" },
       }
     );
-    return response.data.data;
+    return response.data.data; 
   } catch (error) {
     console.error("Error creating question:", error);
     throw error;
   }
 };
+
 
 export const updateQuestion = async (id: string, question: unknown) => {
   try {

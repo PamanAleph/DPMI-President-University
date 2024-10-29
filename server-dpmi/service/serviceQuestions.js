@@ -19,11 +19,11 @@ const findById = async (id) => {
 };
 
 const createData = async (data) => {
-  const { question, type, section_id } = data;  
+  const { question, type, section_id,sequence,parent_id } = data;  
   try {
     const result = await client.query(
-      "INSERT INTO questions (question, type, section_id) VALUES ($1, $2, $3) RETURNING *",
-      [question, type, section_id]
+      "INSERT INTO questions (question, type, section_id, sequence, parent_id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [question, type, section_id, sequence, parent_id]
     );
     return result.rows[0];
   } catch (err) {

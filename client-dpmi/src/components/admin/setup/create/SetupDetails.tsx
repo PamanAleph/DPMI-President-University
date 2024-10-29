@@ -43,16 +43,20 @@ export default function SetupDetails({ onNext }: SetupDetailsProps) {
         name: formData.name,
         slug: formData.slug,
       };
-  
-      await createSetup(setupData);
-  
+
+      const response = await createSetup(setupData);
+
+      if (response && response.id) {
+        localStorage.setItem("setupId", response.id.toString());
+      }
+
       Swal.fire({
         title: "Success!",
         text: "Setup created successfully.",
         icon: "success",
         confirmButtonText: "OK",
       });
-  
+
       onNext();
     } catch (error) {
       setErrorMessage("Failed to create setup. Please try again.");
@@ -67,7 +71,8 @@ export default function SetupDetails({ onNext }: SetupDetailsProps) {
       setIsSubmitting(false);
     }
   };
-    return (
+
+  return (
     <div className="max-w-xl mx-auto p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-semibold text-center mb-6">
         Create New Setup

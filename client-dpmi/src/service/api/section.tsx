@@ -2,6 +2,14 @@ import { API_SECTION } from "@/config/config";
 import Sections from "@/models/section";
 import axios from "axios";
 
+interface CreateSectionResponse {
+  response: {
+    status: string;
+    message: string;
+  };
+  data: Sections[];
+}
+
 export const getSections = async () => {
   try {
     const response = await axios.get<{ data: Sections[] }>(`${API_SECTION}`);
@@ -21,9 +29,11 @@ export const getSection = async (id: string) => {
   }
 };
 
-export const createSection = async (sections: Omit<Sections, "id" | "questions">[]) => {
+export const createSection = async (
+  sections: Omit<Sections, "id" | "questions">[]
+): Promise<CreateSectionResponse> => {
   try {
-    const response = await axios.post(API_SECTION, sections);
+    const response = await axios.post<CreateSectionResponse>(API_SECTION, sections);
     return response.data;
   } catch (error) {
     console.error("Failed to create sections:", error);

@@ -1,33 +1,22 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Swal from "sweetalert2";
-import { fetchSetup } from "@/service/api/setup";
 import { createSection } from "@/service/api/section";
 import Button from "../../Button";
-
+import Sections from "@/models/section";
 
 interface SectionDetailsProps {
   onNext: () => void;
 }
 
-export default function SectionDetails({onNext}:SectionDetailsProps) {
-  const [sections, setSections] = useState([{ name: "" }]);
-  const [setupId, setSetupId] = useState<number | null>(null);
+export default function SectionDetails({ onNext }: SectionDetailsProps) {
+  const [setupId] = useState<number | null>(
+    Number(localStorage.getItem("setupId")) || null
+  );
 
-  useEffect(() => {
-    async function getLatestSetup() {
-      try {
-        const latestSetup = await fetchSetup();
-        if (latestSetup && latestSetup.length > 0) {
-          setSetupId(latestSetup[latestSetup.length - 1].id);
-        }
-      } catch (error) {
-        console.error("Failed to fetch setup:", error);
-      }
-    }
-
-    getLatestSetup();
-  }, []);
+  const [sections, setSections] = useState<Omit<Sections, "id" | "questions">[]>([
+    { name: "", sequence: 0, setup_id: setupId ?? 0 },
+  ]);
 
   const handleSectionChange = (
     index: number,
@@ -39,7 +28,7 @@ export default function SectionDetails({onNext}:SectionDetailsProps) {
   };
 
   const addSection = () => {
-    setSections([...sections, { name: "" }]);
+    setSections([...sections, { name: "", sequence: 0, setup_id: setupId ?? 0 }]);
   };
 
   const removeSection = (index: number) => {
@@ -61,10 +50,24 @@ export default function SectionDetails({onNext}:SectionDetailsProps) {
         setup_id: setupId,
       }));
 
-      await createSection(sectionsData);
-      Swal.fire("Success", "Sections added successfully!", "success");
-      setSections([{ name: "" }]);
-      onNext();
+      // Create sections via API
+      const response = await createSection(sectionsData);
+
+      // Check if response contains data
+      if (response && response.data && response.data.length > 0) {
+        // Extract ID and name from the response data
+        const sectionDetails = response.data.map((section: Sections) => ({
+          id: section.id,
+          name: section.name,
+        }));
+
+        localStorage.setItem("section", JSON.stringify(sectionDetails));
+        Swal.fire("Success", "Sections added successfully!", "success");
+        setSections([{ name: "", sequence: 0, setup_id: setupId ?? 0 }]);
+        onNext();
+      } else {
+        Swal.fire("Error", "No sections were created!", "error");
+      }
     } catch (error) {
       console.error("Failed to create sections:", error);
       Swal.fire("Error", "Failed to add sections!", "error");
@@ -104,13 +107,13 @@ export default function SectionDetails({onNext}:SectionDetailsProps) {
           <Button
             type="button"
             onClick={addSection}
-            className=" bg-green-500 text-white rounded-md hover:bg-green-600 transition"
+            className="bg-green-500 text-white rounded-md hover:bg-green-600 transition"
           >
             Add Another Section
           </Button>
           <Button
             type="submit"
-            className=" bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+            className="bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
           >
             Submit
           </Button>

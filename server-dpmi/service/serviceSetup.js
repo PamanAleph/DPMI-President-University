@@ -70,11 +70,11 @@ const findSetupById = async (id) => {
         s.name AS setup_name, 
         s.slug AS setup_slug,
         sec.id AS section_id, 
-        sec.section_name AS section_name,
-        sec.sequence AS section_sequence,
+        sec.name AS name,
+        sec.sequence AS sequence,
         q.id AS question_id,
         q.type AS question_type,
-        q.question_description AS question_description,
+        q.question AS question,
         q.parent_id AS question_parent_id,
         q.sequence AS question_sequence
       FROM setup s
@@ -163,50 +163,66 @@ const deleteData = async (id) => {
 // Find by slug
 const findBySlug = async (slug) => {
   try {
-    const setupData = await client.query("SELECT * FROM setup WHERE slug = $1", [slug]);
+    const query = `
+      SELECT 
+        s.id AS setup_id, 
+        s.name AS setup_name, 
+        s.create_at AS setup_create_at, 
+        s.slug AS setup_slug, 
+        sec.id AS section_id, 
+        sec.name AS section_name, 
+        sec.sequence AS section_sequence, 
+        q.id AS question_id, 
+        q.parent_id AS question_parent_id, 
+        q.sequence AS question_sequence, 
+        q.question AS question_text, 
+        q.type AS question_type
+      FROM setup s
+      LEFT JOIN sections sec ON sec.setup_id = s.id
+      LEFT JOIN questions q ON q.section_id = sec.id
+      WHERE s.slug = $1
+      ORDER BY sec.sequence, q.sequence;
+    `;
 
-    if (setupData.rowCount === 0) {
+    const result = await client.query(query, [slug]);
+
+    if (result.rowCount === 0) {
       throw new Error(`Setup not found for slug: ${slug}`);
     }
 
-    const setup = setupData.rows[0];
-    const sectionData = await client.query(
-      "SELECT id, name, sequence FROM sections WHERE setup_id = $1",
-      [setup.id]
-    );
+    const setupData = result.rows[0];
 
-    const sectionsWithQuestions = await Promise.all(
-      sectionData.rows.map(async (section) => {
-        const questionData = await client.query(
-          "SELECT * FROM questions WHERE section_id = $1",
-          [section.id]
-        );
-        
-        const questions = questionData.rows.map((question) => ({
-          id: question.id,
-          parent_id: question.parent_id,
-          sequence: question.sequence,
-          question: question.question,
-          type: question.type,
+    const sectionsMap = new Map();
+    result.rows.forEach((row) => {
+      if (!sectionsMap.has(row.section_id)) {
+        sectionsMap.set(row.section_id, {
+          id: row.section_id,
+          name: row.section_name,
+          sequence: row.section_sequence,
+          questions: [],
+        });
+      }
 
-         
-        }));
+      if (row.question_id) {
+        sectionsMap.get(row.section_id).questions.push({
+          id: row.question_id,
+          parent_id: row.question_parent_id,
+          sequence: row.question_sequence,
+          question: row.question_text,
+          type: row.question_type,
+        });
+      }
+    });
 
-        return {
-          id: section.id,
-          name: section.section_name,
-          sequence: section.sequence,
-          questions: questions,
-        };
-      })
-    );
+    const sections = Array.from(sectionsMap.values());
 
+    // Return the setup object with nested sections and questions
     return {
-        id: setup.id,
-        name: setup.name,
-        create_at: setup.create_at,
-        slug: setup.slug,
-        sections: sectionsWithQuestions,
+      id: setupData.setup_id,
+      name: setupData.setup_name,
+      create_at: setupData.setup_create_at,
+      slug: setupData.setup_slug,
+      sections: sections,
     };
   } catch (error) {
     console.error("Error in findBySlug:", error.message);
@@ -215,26 +231,27 @@ const findBySlug = async (slug) => {
 };
 
 
+
 // Get all setup data with major names
 const getAllDataWithMajorName = async () => {
   try {
-    const setupData = await client.query("SELECT * FROM setup");
+    // Raw SQL query to fetch setup data with major names using JOIN and UNNEST
+    const query = `
+      SELECT 
+        s.*, 
+        ARRAY_AGG(m.major_name) AS major_names
+      FROM 
+        setup s
+      LEFT JOIN 
+        major m ON m.id = ANY(s.major_id)
+      GROUP BY 
+        s.id
+    `;
 
-    const setupWithMajorNames = await Promise.all(
-      setupData.rows.map(async (setup) => {
-        const majorData = await client.query(
-          "SELECT major_name FROM major WHERE id = ANY($1::int[])",
-          [setup.major_id] // assuming major_id is an array of IDs
-        );
+    const result = await client.query(query);
 
-        return {
-          ...setup,
-          major_name: majorData.rows.map((major) => major.major_name),
-        };
-      })
-    );
-
-    return setupWithMajorNames;
+    // Return the setup data with major names
+    return result.rows;
   } catch (err) {
     console.error("Error fetching setup data with major names:", err);
     throw err;

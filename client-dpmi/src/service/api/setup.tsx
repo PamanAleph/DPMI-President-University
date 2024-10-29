@@ -25,21 +25,22 @@ export const fetchSetupDetails = async (): Promise<SetupDetails[]> => {
 
 export const createSetup = async (
   setupData: Omit<Setup, "id" | "create_at">
-): Promise<Setup[]> => {
+): Promise<Setup> => {
   try {
-    const response = await axios.post<{ data: Setup[] }>(
+    const response = await axios.post<{ data: Setup }>(
       `${API_SETUP}`,
       setupData,
       {
         headers: { "Content-Type": "application/json" },
       }
     );
-    return response.data.data;
+    return response.data.data; 
   } catch (error) {
     console.error("Error creating setup:", error);
     throw error;
   }
 };
+
 
 interface UpdateSetupNameAndSlugData {
   id: number;
