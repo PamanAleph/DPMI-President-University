@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { decryptId } from "@/utils/crypto";
 import Questions from "@/models/questions";
 
-// Skeleton Loader
 const SkeletonLoader = () => {
   return (
     <div className="animate-pulse max-w-4xl mx-auto p-4">
@@ -51,13 +50,9 @@ export default function EvaluationDetailsPage({ params }: EvaluationDetailsPageP
 
   useEffect(() => {
     const encryptedId = params.id;
-    console.log("Received ID param:", encryptedId);
 
-    // Decrypt the ID
     const decryptedId = decryptId(encryptedId);
-    console.log("Decrypted ID:", decryptedId);
 
-    // If decryption fails, redirect to home
     if (!decryptedId) {
       console.error("Decrypted ID is invalid or empty.");
       router.push("/");
@@ -79,7 +74,6 @@ export default function EvaluationDetailsPage({ params }: EvaluationDetailsPageP
     fetchEvaluation();
   }, [params.id, router]);
 
-  // Show skeleton while loading
   if (loading) {
     return <SkeletonLoader />;
   }

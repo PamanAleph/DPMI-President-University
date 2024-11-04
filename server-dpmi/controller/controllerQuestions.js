@@ -4,6 +4,7 @@ const {
   createData,
   updateData,
   deleteData,
+  fetchQuestionsById
 } = require("../service/serviceQuestions");
 
 const getAllData = async (req, res) => {
@@ -151,10 +152,45 @@ const deleteDataById = async (req, res) => {
   }
 };
 
+const getQuestionsById = async (req, res) => {
+  const { setupId } = req.params;
+  try {
+    const data = await fetchQuestionsById(setupId);
+    if (!data || data.length === 0) {
+      return res.status(404).json({
+        response: {
+          status: "error",
+          message: "No questions found for the given setup ID",
+        },
+        data: null,
+      });
+    }
+    res.json({
+      response: {
+        status: "success",
+        message: "Questions fetched successfully",
+      },
+      data: data,
+    });
+  } catch (err) {
+    console.error("Internal server error:", err);
+    res.status(500).json({
+      response: {
+        status: "error",
+        message: "Internal server error",
+        details: err.message,
+      },
+      data: null,
+    });
+  }
+};
+
+
 module.exports = {
   getAllData,
   getDataById,
   createNewData,
   updateDataById,
   deleteDataById,
+  getQuestionsById
 };

@@ -102,13 +102,16 @@ export default async function page() {
                   key={index}
                   className="h-full p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 min-h-[150px]"
                 >
-                  <h3 className="font-semibold text-lg text-gray-700">
-                    {setup.name}
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-1">ID: {setup.id}</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Created At: {new Date(setup.create_at).toLocaleDateString()}
-                  </p>
+                  <Link key={index} href={`setup/${setup.slug}`}>
+                    <h3 className="font-semibold text-lg text-gray-700">
+                      {setup.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">ID: {setup.id}</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Created At:{" "}
+                      {new Date(setup.create_at).toLocaleDateString()}
+                    </p>
+                  </Link>
                 </li>
               ))}
             </ul>

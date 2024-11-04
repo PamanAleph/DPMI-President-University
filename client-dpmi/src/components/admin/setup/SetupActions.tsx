@@ -6,9 +6,11 @@ import Button from "../Button";
 import Setup from "@/models/setup";
 import { deleteSetup, updateSetupNameAndSlug } from "@/service/api/setup";
 import { checkEvaluation, createEvaluation } from "@/service/api/evaluation";
-import { fetchMajor } from "@/service/api/major"; 
+import { fetchMajor } from "@/service/api/major";
 import Link from "next/link";
-import Select from "react-select"; 
+import Select from "react-select";
+import { fetchQuestionBySetupId } from "@/service/api/questions";
+import { createAnswer } from "@/service/api/answer";
 
 interface SetupActionsProps {
   setupId: number;
@@ -114,7 +116,7 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
 
   const handleGenerateEvaluation = async () => {
     let selectedMajors: { label: string; value: number }[] = [];
-  
+
     const { value: formValues } = await Swal.fire({
       title: "Generate Evaluation",
       html: `
@@ -131,16 +133,17 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
         const end_date = (
           document.getElementById("end-date") as HTMLInputElement
         )?.value;
-  
+
         if (!majorIds.length || !semester || !end_date) {
           Swal.showValidationMessage("Please fill all fields");
           return null;
         }
-  
+
         return { majorIds, semester, end_date };
       },
       didOpen: async () => {
-        const majorSelectContainer = document.getElementById("multi-select-major");
+        const majorSelectContainer =
+          document.getElementById("multi-select-major");
         if (majorSelectContainer) {
           const response = await fetchMajor();
           const majorOptions = response.map(
@@ -149,7 +152,7 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
               value: major.id,
             })
           );
-  
+
           const root = createRoot(majorSelectContainer);
           root.render(
             <Select
@@ -158,7 +161,10 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
               className="swal2-select"
               placeholder="Select Majors"
               onChange={(selectedOptions) => {
-                selectedMajors = selectedOptions as { label: string; value: number }[];
+                selectedMajors = selectedOptions as {
+                  label: string;
+                  value: number;
+                }[];
               }}
             />
           );
@@ -168,51 +174,73 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
       confirmButtonText: "Generate",
       cancelButtonText: "Cancel",
     });
-  
+
     if (formValues) {
-      const majorIds = Array.isArray(formValues.majorIds) ? formValues.majorIds : [];
+      const majorIds = Array.isArray(formValues.majorIds)
+        ? formValues.majorIds
+        : [];
       try {
         for (const majorId of majorIds) {
           const evaluationCheckData = {
             setupId,
-            majorIds: [majorId],  // Mengubah menjadi array
+            majorIds: [majorId],
             semester: formValues.semester,
             endDate: new Date(formValues.end_date),
           };
           const evaluationExists = await checkEvaluation(evaluationCheckData);
-  
+
           if (evaluationExists) {
             Swal.fire(
               "Error",
               `An evaluation for major ${majorId}, semester ${formValues.semester}, and end date already exists.`,
               "error"
             );
-            continue; // Skip jika sudah ada
+            continue;
           }
-  
-          // Buat objek evaluationData untuk setiap majorId
+
           const evaluationData = {
             setup_id: setupId,
-            major_id: majorId, // Kirim satu majorId per evaluasi
+            major_id: majorId,
             semester: formValues.semester,
             end_date: new Date(formValues.end_date),
           };
-  
-          // Panggil createEvaluation untuk setiap majorId
-          await createEvaluation(evaluationData);
+
+          const evaluations = await createEvaluation(evaluationData);
+          const newEvaluation = Array.isArray(evaluations) ? evaluations[0] : evaluations;
+          
+          // Verifikasi `newEvaluation.id` sebagai number
+          const evaluationId = Number(newEvaluation.id);
+          
+          const questions = await fetchQuestionBySetupId(setupId);
+
+          for (const question of questions) {
+            await createAnswer({
+              evaluation_id: evaluationId,
+              question_id: question.id,
+              answer: null,
+              score: null,
+            });
+          }
         }
-  
-        Swal.fire("Success!", "Evaluations generated successfully.", "success").then(() => {
+
+        Swal.fire(
+          "Success!",
+          "Evaluations and answers generated successfully.",
+          "success"
+        ).then(() => {
           window.location.reload();
         });
-      } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-        Swal.fire("Error", `Failed to generate the evaluation: ${errorMessage}`, "error");
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "An unknown error occurred";
+        Swal.fire(
+          "Error",
+          `Failed to generate the evaluation and answers: ${errorMessage}`,
+          "error"
+        );
       }
     }
   };
-  
-  
 
   return (
     <section className="flex gap-4 justify-center">

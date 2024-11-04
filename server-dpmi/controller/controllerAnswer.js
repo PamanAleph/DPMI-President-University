@@ -65,19 +65,19 @@ const getDataById = async (req, res) => {
 
 const createAnswer = async (req, res) => {
   try {
-    const { question_id, answer } = req.body;
+    const { question_id, answer = null, evaluation_id, score = null } = req.body;
 
-    if (!question_id || !answer) {
+    if (!question_id || !evaluation_id) {
       return res.status(400).json({
         response: {
           status: "error",
-          message: "Question ID and answer text are required",
+          message: "Evaluation ID and question ID are required",
         },
         data: null,
       });
     }
 
-    const newAnswer = await insertAnswer(question_id, answer);
+    const newAnswer = await insertAnswer(evaluation_id, question_id, answer, score);
     res.status(201).json({
       response: {
         status: "success",
@@ -97,6 +97,7 @@ const createAnswer = async (req, res) => {
     });
   }
 };
+
 const updateAnswerData = async (req, res) => {
   try {
     const { id } = req.params;

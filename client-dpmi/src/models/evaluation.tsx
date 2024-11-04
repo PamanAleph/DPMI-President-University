@@ -1,5 +1,5 @@
 interface Evaluation {
-    id: number;             
+    id?: number;             
     setup_id: number;       
     major_id: number;       
     semester: string;       

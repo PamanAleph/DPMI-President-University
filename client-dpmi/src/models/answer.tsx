@@ -1,8 +1,8 @@
 interface Answer {
-    id: number;
+    id?: number;
     question_id: number;
-    answer: string;
-    score: number;
+    answer: null | string;
+    score: null | number;
     evaluation_id: number;
 }
 

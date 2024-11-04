@@ -15,7 +15,7 @@ export default async function EvaluationDetailsPage({
   }
 
   const evaluation: EvaluationDetails | null = await fetchEvaluationById(
-    params.id
+    Number(params.id)
   );
 
   if (!evaluation) {

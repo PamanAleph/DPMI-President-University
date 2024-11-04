@@ -25,33 +25,31 @@ const findById = async (id) => {
   }
 };
 
-const insertAnswer = async (questionId, answerText) => {
+const insertAnswer = async (evaluationId, questionId, answer = null, score = null) => {
   try {
     const query = `
-      INSERT INTO answers (question_id, answer)
-      VALUES ($1, $2)
+      INSERT INTO answers (evaluation_id, question_id, answer, score)
+      VALUES ($1, $2, $3, $4)
       RETURNING *;
     `;
-    const values = [questionId, answerText];
-    
+    const values = [evaluationId, questionId, answer, score];
     const result = await client.query(query, values);
-    
     return result.rows[0];
   } catch (error) {
-    console.error("Internal server error:", error);
+    console.error("Error inserting answer:", error);
     throw new Error("Failed to insert answer data");
   }
 };
 
-const updateAnswer = async (id, questionId, answerText) => {
+const updateAnswer = async (id, answerText, score) => {
   try {
     const query = `
       UPDATE answers
-      SET question_id = $1, answer = $2
+      SET answer = $1, score = $2
       WHERE id = $3
       RETURNING *;
     `;
-    const values = [questionId, answerText, id];
+    const values = [answerText, score, id];
     
     const result = await client.query(query, values);
     

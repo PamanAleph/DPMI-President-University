@@ -31,13 +31,12 @@ export const createQuestion = async (
         headers: { "Content-Type": "application/json" },
       }
     );
-    return response.data.data; 
+    return response.data.data;
   } catch (error) {
     console.error("Error creating question:", error);
     throw error;
   }
 };
-
 
 export const updateQuestion = async (id: string, question: unknown) => {
   try {
@@ -48,4 +47,20 @@ export const updateQuestion = async (id: string, question: unknown) => {
   }
 };
 
+export const deleteQuestion = async (id: string) => {
+  try {
+    const response = await axios.delete(`${API_QUESTION}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
 
+export const fetchQuestionBySetupId = async (setupId: number) => {
+  try {
+    const response = await axios.get(`${API_QUESTION}/setup/${setupId}`);
+    return response.data.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
