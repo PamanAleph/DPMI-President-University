@@ -20,16 +20,11 @@ export default async function MajorDetailsPage({
     return redirect("/404");
   }
 
-
   return (
     <section className="container mx-auto p-8">
       <h1 className="text-4xl font-bold mb-4">{major.name}</h1>
-      <p className="text-lg">
-        Major Head: {major.head || "Not Assigned"}
-      </p>
-      <p className="text-lg">
-        Emails: {major.emails || "Not Assigned"}
-      </p>
+      <p className="text-lg">Major Head: {major.head || "Not Assigned"}</p>
+      <p className="text-lg">Emails: {major.emails || "Not Assigned"}</p>
       <p className="text-lg">
         Created At: {new Date(major.created_at).toLocaleDateString()}
       </p>

@@ -35,16 +35,30 @@ const findById = async (id) => {
     }
 
     const evaluationQuery = `
-      SELECT e.*, m.name AS major_name, s.*, 
+      SELECT 
+        e.id AS evaluation_id,
+        e.*, 
+        m.name AS major_name, 
+        s.*, 
         sec.id AS section_id, sec.name AS section_name, sec.sequence AS section_sequence,
-        q.id AS question_id, q.question, q.type, q.parent_id, q.sequence AS question_sequence
-      FROM evaluations e
-      LEFT JOIN major m ON e.major_id = m.id
-      LEFT JOIN setup s ON e.setup_id = s.id
-      LEFT JOIN sections sec ON s.id = sec.setup_id
-      LEFT JOIN questions q ON sec.id = q.section_id
-      WHERE e.id = $1
-      ORDER BY sec.sequence, q.sequence;
+        q.id AS question_id, q.question, q.type, q.parent_id, q.sequence AS question_sequence,
+        a.id AS answer_id, a.answer, a.score
+      FROM 
+        evaluations e
+      LEFT JOIN 
+        major m ON e.major_id = m.id
+      LEFT JOIN 
+        setup s ON e.setup_id = s.id
+      LEFT JOIN 
+        sections sec ON s.id = sec.setup_id
+      LEFT JOIN 
+        questions q ON sec.id = q.section_id
+      LEFT JOIN 
+        answers a ON q.id = a.question_id AND a.evaluation_id = e.id
+      WHERE 
+        e.id = $1
+      ORDER BY 
+        sec.sequence, q.sequence;
     `;
 
     const { rows: evaluationData } = await client.query(evaluationQuery, [
@@ -57,37 +71,48 @@ const findById = async (id) => {
 
     const evaluation = evaluationData[0];
 
-    // Group sections and questions
+    // Group sections, questions, and answers
     const sectionsMap = {};
     evaluationData.forEach((row) => {
+      // Group sections
       if (!sectionsMap[row.section_id]) {
         sectionsMap[row.section_id] = {
           id: row.section_id,
-          setup_id: evaluation.setup_id,
+          setup_id: row.setup_id,
           name: row.section_name || `Section ${row.section_sequence}`,
           sequence: row.section_sequence,
           questions: [],
         };
       }
 
+      // Group questions with answers
       if (row.question_id) {
-        sectionsMap[row.section_id].questions.push({
+        const question = {
           id: row.question_id,
           section_id: row.section_id,
           question: row.question,
           type: row.type,
           parent_id: row.parent_id,
           sequence: row.question_sequence,
-        });
+          answer: row.answer
+            ? {
+                id: row.answer_id,
+                answer: row.answer,
+                score: row.score,
+              }
+            : null,
+        };
+
+        sectionsMap[row.section_id].questions.push(question);
       }
     });
 
     // Convert sectionsMap to an array
     const sections = Object.values(sectionsMap);
 
-    // Construct the response object
+    // Construct the response object with the correct evaluation ID
     return {
-      id: evaluation.id,
+      id: evaluation.evaluation_id, // Use the correct evaluation ID here
       setup_id: evaluation.setup_id,
       semester: evaluation.semester,
       end_date: evaluation.end_date,
@@ -133,8 +158,8 @@ const updateData = async (id, data) => {
       RETURNING *
     `;
     const values = [
-      data.setup_id, 
-      data.major_id, 
+      data.setup_id,
+      data.major_id,
       data.semester,
       data.end_date,
       id,
@@ -220,6 +245,25 @@ const evaluationsDataWithSetup = async () => {
     throw error;
   }
 };
+const findEvaluationsByMajor = async (majorId) => {
+  try {
+    const query = `
+      SELECT e.*, 
+             m.name AS major_name, 
+             s.name AS setup_name
+      FROM evaluations e
+      LEFT JOIN major m ON e.major_id = m.id
+      LEFT JOIN setup s ON e.setup_id = s.id
+      WHERE e.major_id = $1
+    `;
+
+    const { rows: evaluations } = await client.query(query, [majorId]);
+    return evaluations;
+  } catch (error) {
+    console.error("Error fetching evaluations by major:", error);
+    throw error;
+  }
+};
 
 module.exports = {
   findAll,
@@ -229,4 +273,5 @@ module.exports = {
   deleteData,
   checkExistingEvaluation,
   evaluationsDataWithSetup,
+  findEvaluationsByMajor,
 };

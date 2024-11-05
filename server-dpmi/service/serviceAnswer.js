@@ -87,10 +87,27 @@ const deleteAnswer = async (id) => {
   }
 };
 
+const fetchAnswerByEvaluationId = async (evaluationId) => {
+  try {
+    const query = `
+      SELECT * FROM answers
+      WHERE evaluation_id = $1;
+    `;
+    const values = [evaluationId];
+
+    const result = await client.query(query, values);
+    return result.rows;
+  } catch (error) {
+    console.error("Internal server error:", error);
+    throw new Error("Failed to fetch answer data");
+  }
+};
+
 module.exports = {
   findAll,
   findById,
   insertAnswer,
   updateAnswer,
-  deleteAnswer
+  deleteAnswer,
+  fetchAnswerByEvaluationId
 };

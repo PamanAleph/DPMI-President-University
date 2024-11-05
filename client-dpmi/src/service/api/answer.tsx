@@ -4,7 +4,7 @@ import axios from "axios";
 
 export async function fetchAnswers(evaluationId: number): Promise<Answer[]> {
   try {
-    const response = await axios.get(`${API_ANSWER}/id/${evaluationId}`);
+    const response = await axios.get(`${API_ANSWER}/evaluation/${evaluationId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching answers:", error);
@@ -22,18 +22,22 @@ export async function createAnswer(answerData: Answer): Promise<Answer> {
   }
 }
 
-export async function updateAnswer(id: number, answerText: string, score: number): Promise<Answer> {
-    try {
-      const response = await axios.put(`${API_ANSWER}/id/${id}`, {
-        answer: answerText,
-        score: score,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error updating answer:", error);
-      throw error;
-    }
+export async function updateAnswer(
+  id: number,
+  answerText: string,
+  score: number
+): Promise<Answer> {
+  try {
+    const response = await axios.put(`${API_ANSWER}/id/${id}`, {
+      answer: answerText,
+      score: score,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating answer:", error);
+    throw error;
   }
+}
 
 export async function deleteAnswer(answerId: number): Promise<void> {
   try {

@@ -60,9 +60,7 @@ export default async function EvaluationDetailsPage({
             Major Name
           </h2>
           <ul className="space-y-2">
-              <li className="text-gray-600">
-                {evaluation.major_name}
-              </li>
+            <li className="text-gray-600">{evaluation.major_name}</li>
           </ul>
         </div>
       </div>
@@ -86,9 +84,6 @@ export default async function EvaluationDetailsPage({
                 <th className="py-2 px-4 text-gray-700 border border-gray-300 w-1/12">
                   Section Sequence
                 </th>
-                {/* <th className="py-2 px-4 text-gray-700 border border-gray-300 w-1/12">
-                  Section ID
-                </th> */}
                 <th className="py-2 px-4 text-gray-700 border border-gray-300 w-3/12">
                   Section Name
                 </th>
@@ -106,9 +101,6 @@ export default async function EvaluationDetailsPage({
                   <td className="py-2 px-4 text-gray-600 border border-gray-300">
                     {section.sequence}
                   </td>
-                  {/* <td className="py-2 px-4 text-gray-600 border border-gray-300">
-                    {section.id}
-                  </td> */}
                   <td className="py-2 px-4 text-gray-600 border border-gray-300">
                     {section.name}
                   </td>
@@ -120,9 +112,6 @@ export default async function EvaluationDetailsPage({
                           <th className="py-1 px-2 text-gray-600 border border-gray-300 w-1/12">
                             No
                           </th>
-                          {/* <th className="py-1 px-2 text-gray-600 border border-gray-300 w-2/12">
-                            Question ID
-                          </th> */}
                           <th className="py-1 px-2 text-gray-600 border border-gray-300 w-2/12">
                             Parent ID
                           </th>
@@ -130,7 +119,10 @@ export default async function EvaluationDetailsPage({
                             Type
                           </th>
                           <th className="py-1 px-2 text-gray-600 border border-gray-300 w-5/12">
-                            Data
+                            Question
+                          </th>
+                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-5/12">
+                            Answer
                           </th>
                         </tr>
                       </thead>
@@ -154,6 +146,9 @@ export default async function EvaluationDetailsPage({
                             </td>
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
                               {question.question}
+                            </td>
+                            <td className="py-1 px-2 text-gray-500 border border-gray-300">
+                              {question.answer?.answer || "-"}
                             </td>
                           </tr>
                         ))}

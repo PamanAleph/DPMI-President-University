@@ -1,3 +1,5 @@
+import Answer from "./answer";
+
 interface Questions{
     id: number;
     question: string;
@@ -5,6 +7,7 @@ interface Questions{
     sequence: number;
     parent_id: number | null;
     section_id: number | null;
+    answer: Answer;
 }
 
 export default Questions

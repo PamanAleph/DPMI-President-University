@@ -5,7 +5,8 @@ const {
   updateData,
   deleteData,
   checkExistingEvaluation,
-  evaluationsDataWithSetup
+  evaluationsDataWithSetup,
+  findEvaluationsByMajor
 } = require("../service/serviceEvaluations");
 
 const getAllData = async (req, res) => {
@@ -220,6 +221,41 @@ const evaluationData = async(req,res) => {
   }
 }
 
+const getEvaluationsByMajor = async (req, res) => {
+  const { majorId } = req.params;
+  
+  try {
+    const evaluations = await findEvaluationsByMajor(majorId);
+    
+    if (evaluations.length === 0) {
+      return res.status(404).json({
+        response: {
+          status: "error",
+          message: "No evaluations found for the specified major",
+        },
+        data: null,
+      });
+    }
+
+    res.json({
+      response: {
+        status: "success",
+        message: "Evaluations fetched successfully",
+      },
+      data: evaluations,
+    });
+  } catch (error) {
+    console.error("Error fetching evaluations by major:", error);
+    res.status(500).json({
+      response: {
+        status: "error",
+        message: "Internal server error",
+        details: error.message,
+      },
+      data: null,
+    });
+  }
+};
 
 module.exports = {
   getAllData,
@@ -228,5 +264,6 @@ module.exports = {
   updateExistingData,
   deleteDataById,
   checkingExistingEvaluation,
-  evaluationData
+  evaluationData,
+  getEvaluationsByMajor
 };

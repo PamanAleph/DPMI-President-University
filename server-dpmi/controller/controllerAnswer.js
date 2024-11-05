@@ -4,6 +4,7 @@ const {
   insertAnswer,
   updateAnswer,
   deleteAnswer,
+  fetchAnswerByEvaluationId
 } = require("../service/serviceAnswer");
 
 const getAllData = async (req, res) => {
@@ -160,10 +161,47 @@ const deleteAnswerData = async (req, res) => {
   }
 };
 
+const getAnswersByEvaluationId = async (req, res) => {
+  try {
+    const { evaluationId } = req.params;
+    const answers = await fetchAnswerByEvaluationId(evaluationId);
+
+    if (!answers.length) {
+      res.status(404).json({
+        response: {
+          status: "error",
+          message: "No answers found for this evaluation ID",
+        },
+        data: null,
+      });
+    } else {
+      res.json({
+        response: {
+          status: "success",
+          message: "Answers fetched successfully",
+        },
+        data: answers,
+      });
+    }
+  } catch (err) {
+    console.error("Internal server error:", err);
+    res.status(500).json({
+      response: {
+        status: "error",
+        message: "Internal server error",
+        details: err.message,
+      },
+      data: null,
+    });
+  }
+};
+
+
 module.exports = {
   getAllData,
   getDataById,
   createAnswer,
   updateAnswerData,
   deleteAnswerData,
+  getAnswersByEvaluationId
 };

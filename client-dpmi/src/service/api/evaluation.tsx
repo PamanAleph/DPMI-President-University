@@ -102,3 +102,15 @@ export const fetchEvaluationById = async (evaluationId: number) => {
     return null;
   }
 };
+
+export const fetchEvaluationByMajorId = async (major_id: number) => {
+  try {
+    const response = await axios.get<{ data: Evaluation[] }>(
+      `${API_EVALUATION}/major/${major_id}`
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching evaluation by setup ID:", error);
+    return [];
+  }
+};

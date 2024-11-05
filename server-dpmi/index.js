@@ -19,6 +19,7 @@ const routerAnswer = require("./routes/answerRoute");
 const routerAuth = require("./routes/authRoute")
 const routerUsers = require("./routes/userRoutes")
 const routerRole = require('./routes/roleRoute')
+const routerDownload = require("./routes/downloadRoute");
 
 const errorHandler = require("./middleware/errorHandler");
 
@@ -33,6 +34,7 @@ app.use("/api/v1/answers", routerAnswer);
 app.use("/api/v1/auth", routerAuth);
 app.use("/api/v1/users", routerUsers);
 app.use("/api/v1/roles", routerRole);
+app.use("/api/v1/download", routerDownload);
 
 
 const port = process.env.PORT | 4000;
