@@ -4,7 +4,9 @@ import axios from "axios";
 
 export async function fetchAnswers(evaluationId: number): Promise<Answer[]> {
   try {
-    const response = await axios.get(`${API_ANSWER}/evaluation/${evaluationId}`);
+    const response = await axios.get(
+      `${API_ANSWER}/evaluation/${evaluationId}`
+    );
     return response.data;
   } catch (error) {
     console.error("Error fetching answers:", error);
@@ -23,18 +25,13 @@ export async function createAnswer(answerData: Answer): Promise<Answer> {
 }
 
 export async function updateAnswer(
-  id: number,
-  answerText: string,
-  score: number
-): Promise<Answer> {
+  answers: Array<{ id: number; answer: string; score: number }>
+): Promise<void> {
   try {
-    const response = await axios.put(`${API_ANSWER}/id/${id}`, {
-      answer: answerText,
-      score: score,
-    });
-    return response.data;
+    const response = await axios.put(`${API_ANSWER}/batch-update`, { answers });
+    console.log("Batch update response:", response.data);
   } catch (error) {
-    console.error("Error updating answer:", error);
+    console.error("Error updating answers:", error);
     throw error;
   }
 }

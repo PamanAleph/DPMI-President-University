@@ -94,13 +94,14 @@ const findById = async (id) => {
           type: row.type,
           parent_id: row.parent_id,
           sequence: row.question_sequence,
-          answer: row.answer
+          // Ensure answer is always present
+          answer: row.answer_id
             ? {
                 id: row.answer_id,
                 answer: row.answer,
                 score: row.score,
               }
-            : null,
+            : { id: null, answer: null, score: null }, // Placeholder when answer is null
         };
 
         sectionsMap[row.section_id].questions.push(question);
@@ -112,7 +113,7 @@ const findById = async (id) => {
 
     // Construct the response object with the correct evaluation ID
     return {
-      id: evaluation.evaluation_id, // Use the correct evaluation ID here
+      id: evaluation.evaluation_id,
       setup_id: evaluation.setup_id,
       semester: evaluation.semester,
       end_date: evaluation.end_date,

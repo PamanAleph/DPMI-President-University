@@ -101,26 +101,25 @@ const createAnswer = async (req, res) => {
 
 const updateAnswerData = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { question_id, answer } = req.body;
+    const { answers } = req.body;
 
-    if (!question_id || !answer) {
+    if (!Array.isArray(answers) || answers.length === 0) {
       return res.status(400).json({
         response: {
           status: "error",
-          message: "Question ID and answer text are required",
+          message: "Answers array is required",
         },
         data: null,
       });
     }
+    const updatedAnswers = await updateAnswer(answers);
 
-    const updatedAnswer = await updateAnswer(id, question_id, answer);
     res.json({
       response: {
         status: "success",
-        message: "Answer updated successfully",
+        message: "Answers updated successfully",
       },
-      data: updatedAnswer,
+      data: updatedAnswers,
     });
   } catch (err) {
     console.error("Internal server error:", err);
@@ -134,6 +133,7 @@ const updateAnswerData = async (req, res) => {
     });
   }
 };
+
 
 // Delete an answer
 const deleteAnswerData = async (req, res) => {

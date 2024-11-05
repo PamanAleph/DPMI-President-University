@@ -6,6 +6,7 @@ import EvaluationDetails from "@/models/evaluationDetails";
 import { useRouter } from "next/navigation";
 import { decryptId } from "@/utils/crypto";
 import Questions from "@/models/questions";
+import { updateAnswer } from "@/service/api/answer"; // Import the updateAnswer function
 
 const SkeletonLoader = () => {
   return (
@@ -27,7 +28,9 @@ interface EvaluationDetailsPageProps {
   params: { id: string };
 }
 
-export default function EvaluationDetailsPage({ params }: EvaluationDetailsPageProps) {
+export default function EvaluationDetailsPage({
+  params,
+}: EvaluationDetailsPageProps) {
   const [evaluation, setEvaluation] = useState<EvaluationDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
@@ -43,13 +46,15 @@ export default function EvaluationDetailsPage({ params }: EvaluationDetailsPageP
     }
 
     const fetchEvaluation = async () => {
-      const apiResponse: EvaluationDetails | null = await fetchEvaluationById(decryptedId);
+      const apiResponse: EvaluationDetails | null = await fetchEvaluationById(
+        decryptedId
+      );
       if (!apiResponse) {
         console.error("No evaluation found for the provided ID.");
         router.push("/");
       } else {
         setEvaluation(apiResponse);
-        setLoading(false); 
+        setLoading(false);
       }
     };
 
@@ -118,57 +123,117 @@ export default function EvaluationDetailsPage({ params }: EvaluationDetailsPageP
     }
   };
 
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!evaluation) return;
+
+    try {
+      const answers = evaluation.setup.sections
+        .flatMap((section) =>
+          section.questions.map((question) => {
+            const answerInput = document.getElementsByName(
+              `question_${question.id}`
+            )[0] as HTMLInputElement | HTMLTextAreaElement | null;
+
+            if (answerInput) {
+              const answerText =
+                answerInput.type === "checkbox"
+                  ? (answerInput as HTMLInputElement).checked
+                    ? "true"
+                    : "false"
+                  : answerInput.value;
+
+              const answerId = question.answer?.id;
+
+              if (answerId !== undefined && answerId !== null) {
+                return {
+                  id: answerId,
+                  answer: answerText,
+                  score: question.answer?.score || 0,
+                };
+              }
+            }
+            return null;
+          })
+        )
+        .filter(
+          (answer): answer is { id: number; answer: string; score: number } =>
+            answer !== null
+        );
+
+      // Pass filtered answers array to updateAnswer
+      await updateAnswer(answers);
+      console.log("All answers updated successfully!");
+      alert("Submission successful!");
+    } catch (error) {
+      console.error("Error during submission:", error);
+      alert("There was an error updating your answers.");
+    }
+  };
+
   if (!evaluation) {
     return <SkeletonLoader />;
   }
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8 bg-gray-50">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Evaluation Details</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">
+        Evaluation Details
+      </h1>
 
-      <div className="bg-white shadow-lg rounded-xl p-8 transition-all">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-6">
-          Evaluasi {evaluation.id}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <p>
-            <span className="font-semibold text-gray-600">Setup Name:</span> {evaluation.setup.name}
-          </p>
-          <p>
-            <span className="font-semibold text-gray-600">Major Name:</span> {evaluation.major_name}
-          </p>
-          <p>
-            <span className="font-semibold text-gray-600">Semester:</span> {evaluation.semester}
-          </p>
-          <p>
-            <span className="font-semibold text-gray-600">End Date:</span>{" "}
-            {new Date(evaluation.end_date).toLocaleDateString()}
-          </p>
+      <form onSubmit={handleSubmit}>
+        <div className="bg-white shadow-lg rounded-xl p-8 transition-all">
+          <h2 className="text-2xl font-semibold text-gray-700 mb-6">
+            Evaluasi {evaluation.id}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <p>
+              <span className="font-semibold text-gray-600">Setup Name:</span>{" "}
+              {evaluation.setup.name}
+            </p>
+            <p>
+              <span className="font-semibold text-gray-600">Major Name:</span>{" "}
+              {evaluation.major_name}
+            </p>
+            <p>
+              <span className="font-semibold text-gray-600">Semester:</span>{" "}
+              {evaluation.semester}
+            </p>
+            <p>
+              <span className="font-semibold text-gray-600">End Date:</span>{" "}
+              {new Date(evaluation.end_date).toLocaleDateString()}
+            </p>
+          </div>
         </div>
-      </div>
 
-      {evaluation.setup.sections.map((section) => (
-        <div key={section.id} className="bg-white shadow-lg rounded-xl p-8 mb-6 transition-all">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">{section.name}</h2>
-          {section.questions.map((question) => (
-            <div key={question.id} className="mb-6">
-              <label className="block text-gray-700 font-medium mb-2">
-                {question.question}
-              </label>
-              {renderInputField(question)}
-            </div>
-          ))}
+        {evaluation.setup.sections.map((section) => (
+          <div
+            key={section.id}
+            className="bg-white shadow-lg rounded-xl p-8 mb-6 transition-all"
+          >
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+              {section.name}
+            </h2>
+            {section.questions.map((question) => (
+              <div key={question.id} className="mb-6">
+                <label className="block text-gray-700 font-medium mb-2">
+                  {question.question}
+                </label>
+                {renderInputField(question)}
+              </div>
+            ))}
+          </div>
+        ))}
+
+        <div className="flex justify-end mt-6">
+          <button
+            type="submit"
+            className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+          >
+            Submit
+          </button>
         </div>
-      ))}
-
-      <div className="flex justify-end mt-6">
-        <button
-          type="submit"
-          className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all transform hover:-translate-y-0.5"
-        >
-          Submit
-        </button>
-      </div>
+      </form>
     </div>
   );
 }

@@ -41,26 +41,27 @@ const insertAnswer = async (evaluationId, questionId, answer = null, score = nul
   }
 };
 
-const updateAnswer = async (id, answerText, score) => {
+const updateAnswer = async (answers) => {
   try {
     const query = `
       UPDATE answers
-      SET answer = $1, score = $2
-      WHERE id = $3
+      SET answer = data.answer, score = data.score
+      FROM (VALUES ${answers.map((_, i) => `($${i * 3 + 1}::INTEGER, $${i * 3 + 2}, $${i * 3 + 3}::INTEGER)`).join(", ")}) AS data(id, answer, score)
+      WHERE answers.id = data.id
       RETURNING *;
     `;
-    const values = [answerText, score, id];
-    
+
+    const values = answers.flatMap(({ id, answer, score }) => [id, answer, score]);
     const result = await client.query(query, values);
-    
+
     if (result.rows.length === 0) {
-      throw new Error("Answer not found");
+      throw new Error("No answers were updated");
     }
 
-    return result.rows[0];
+    return result.rows;
   } catch (error) {
     console.error("Internal server error:", error);
-    throw new Error("Failed to update answer data");
+    throw new Error("Failed to update answers");
   }
 };
 
