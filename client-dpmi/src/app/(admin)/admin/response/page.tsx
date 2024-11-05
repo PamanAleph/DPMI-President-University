@@ -6,7 +6,7 @@ import Title from "@/components/admin/Title";
 export default async function page() {
   const majors = await fetchMajor();
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 container">
       <Title>Response Page</Title>
       <div className="flex justify-end">
         <CreateMajor />

@@ -8,7 +8,7 @@ import React from "react";
 export default async function Page() {
   const setup = await fetchSetup();
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 container">
       <Title>Setup</Title>
       <div className="justify-end flex">
         <Link href="setup/create">

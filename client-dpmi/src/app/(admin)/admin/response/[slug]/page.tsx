@@ -21,13 +21,33 @@ export default async function MajorDetailsPage({
   }
 
   return (
-    <section className="container mx-auto p-8">
-      <h1 className="text-4xl font-bold mb-4">{major.name}</h1>
-      <p className="text-lg">Major Head: {major.head || "Not Assigned"}</p>
-      <p className="text-lg">Emails: {major.emails || "Not Assigned"}</p>
-      <p className="text-lg">
-        Created At: {new Date(major.created_at).toLocaleDateString()}
-      </p>
+    <section className="container mx-auto ">
+      <div className="max-w-lg w-full bg-white shadow-lg rounded-lg p-6 transition-all transform hover:scale-105">
+        <h1 className="text-4xl font-bold mb-6 text-gray-900 border-b-2 pb-4 text-center">
+          {major.name}
+        </h1>
+
+        <div className="space-y-4 text-gray-700">
+          <div className="flex items-center gap-3">
+            <span className="text-lg">
+              <strong>Major Head:</strong> {major.head || "Not Assigned"}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-lg">
+              <strong>Email:</strong> {major.emails || "Not Assigned"}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-lg">
+              <strong>Created At:</strong>{" "}
+              {new Date(major.created_at).toLocaleDateString()}
+            </span>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

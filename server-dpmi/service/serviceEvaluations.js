@@ -152,12 +152,19 @@ const createData = async (data) => {
 
 const updateData = async (id, data) => {
   try {
+    if (typeof data.major_id !== "number") {
+      throw new Error(
+        `Expected major_id to be a number, but got ${typeof data.major_id}`
+      );
+    }
+
     const updateQuery = `
       UPDATE evaluations
       SET setup_id = $1, major_id = $2, semester = $3, end_date = $4
       WHERE id = $5
       RETURNING *
     `;
+
     const values = [
       data.setup_id,
       data.major_id,
@@ -169,7 +176,7 @@ const updateData = async (id, data) => {
     const { rows: updatedData } = await client.query(updateQuery, values);
     return updatedData[0];
   } catch (err) {
-    console.log(err);
+    console.error("Error updating data:", err);
     throw err;
   }
 };

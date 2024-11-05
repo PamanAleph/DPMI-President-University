@@ -48,7 +48,7 @@ export default function Page() {
   };
 
   return (
-    <div className="lg:border-b lg:border-t lg:border-gray-200">
+    <div className="lg:border-b lg:border-t lg:border-gray-200 container">
       <nav
         className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
         aria-label="Progress"

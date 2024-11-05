@@ -29,7 +29,7 @@ export async function updateAnswer(
 ): Promise<void> {
   try {
     const response = await axios.put(`${API_ANSWER}/batch-update`, { answers });
-    console.log("Batch update response:", response.data);
+    return response.data;
   } catch (error) {
     console.error("Error updating answers:", error);
     throw error;

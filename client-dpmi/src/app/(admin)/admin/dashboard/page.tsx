@@ -25,7 +25,8 @@ export default async function page() {
     const recentSetups = setups.sort((a, b) => b.id - a.id).slice(0, 3);
 
     const recentEvaluations = evaluations
-      .sort((a, b) => b.id - a.id)
+      .filter((evaluation) => evaluation.id !== undefined)
+      .sort((a, b) => (b.id as number) - (a.id as number))
       .slice(0, 3);
 
     const statistickData = [
@@ -47,7 +48,7 @@ export default async function page() {
     ];
 
     return (
-      <section>
+      <section className="container">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {statistickData.map((stat, index) => (
             <StatisticCard

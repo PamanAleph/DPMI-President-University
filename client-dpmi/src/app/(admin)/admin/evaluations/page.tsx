@@ -10,7 +10,7 @@ export default async function page() {
 
   if (!evaluation || evaluation.length === 0) {
     return (
-      <section className="min-h-screen flex justify-center items-center">
+      <section className="container">
         <div className="text-center">
           <h2 className="text-lg font-bold mb-4 text-gray-600">
             Data Evaluasi Belum Tersedia
@@ -30,7 +30,7 @@ export default async function page() {
   }
 
   return (
-    <section className="space-y-10">
+    <section className="space-y-10 container">
       <Title>Evaluations Page</Title>
       <EvaluationTable evaluations={evaluation} />
     </section>
