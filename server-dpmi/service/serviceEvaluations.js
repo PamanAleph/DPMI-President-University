@@ -29,7 +29,6 @@ const findAll = async () => {
 const findById = async (id) => {
   try {
     const numericId = parseInt(id, 10);
-
     if (isNaN(numericId)) {
       throw new Error("ID must be a valid integer");
     }
@@ -61,9 +60,7 @@ const findById = async (id) => {
         sec.sequence, q.sequence;
     `;
 
-    const { rows: evaluationData } = await client.query(evaluationQuery, [
-      numericId,
-    ]);
+    const { rows: evaluationData } = await client.query(evaluationQuery, [numericId]);
 
     if (!evaluationData.length) {
       return null;
@@ -71,7 +68,6 @@ const findById = async (id) => {
 
     const evaluation = evaluationData[0];
 
-    // Group sections, questions, and answers
     const sectionsMap = {};
     evaluationData.forEach((row) => {
       // Group sections
@@ -101,17 +97,15 @@ const findById = async (id) => {
                 answer: row.answer,
                 score: row.score,
               }
-            : { id: null, answer: null, score: null }, // Placeholder when answer is null
+            : { id: null, answer: null, score: null },
         };
 
         sectionsMap[row.section_id].questions.push(question);
       }
     });
 
-    // Convert sectionsMap to an array
     const sections = Object.values(sectionsMap);
 
-    // Construct the response object with the correct evaluation ID
     return {
       id: evaluation.evaluation_id,
       setup_id: evaluation.setup_id,
@@ -132,6 +126,7 @@ const findById = async (id) => {
     throw new Error(`Could not fetch evaluation with ID ${id}: ${err.message}`);
   }
 };
+
 
 const createData = async (data) => {
   try {
@@ -253,6 +248,7 @@ const evaluationsDataWithSetup = async () => {
     throw error;
   }
 };
+
 const findEvaluationsByMajor = async (majorId) => {
   try {
     const query = `

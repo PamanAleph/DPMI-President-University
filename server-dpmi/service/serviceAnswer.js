@@ -65,6 +65,29 @@ const updateAnswer = async (answers) => {
   }
 };
 
+const updateScore = async (questionId, score, evaluationId) => {
+  try {
+    const query = `
+      UPDATE answers
+      SET score = $1
+      WHERE question_id = $2 AND evaluation_id = $3
+      RETURNING *;
+    `;
+    const values = [score, questionId, evaluationId];
+
+    const result = await client.query(query, values);
+
+    if (result.rows.length === 0) {
+      throw new Error("Answer not found or score not updated");
+    }
+
+    return result.rows[0];
+  } catch (error) {
+    console.error("Internal server error:", error);
+    throw new Error("Failed to update score");
+  }
+};
+
 // Delete an answer
 const deleteAnswer = async (id) => {
   try {
@@ -110,5 +133,6 @@ module.exports = {
   insertAnswer,
   updateAnswer,
   deleteAnswer,
-  fetchAnswerByEvaluationId
+  fetchAnswerByEvaluationId,
+  updateScore,
 };

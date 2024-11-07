@@ -1,25 +1,69 @@
+"use client";
 import EvaluationDetails from "@/models/evaluationDetails";
 import { fetchEvaluationById } from "@/service/api/evaluation";
+import { updateAnswerScore } from "@/service/api/answer";
 import { redirect } from "next/navigation";
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import Swal from "sweetalert2";
 
 interface EvaluationDetailsPageProps {
   params: { id: string };
 }
 
-export default async function EvaluationDetailsPage({
+export default function EvaluationDetailsPage({
   params,
 }: EvaluationDetailsPageProps) {
-  if (!params.id || params.id.length < 1) {
-    return redirect("/404");
-  }
-
-  const evaluation: EvaluationDetails | null = await fetchEvaluationById(
-    Number(params.id)
+  const [evaluation, setEvaluation] = useState<EvaluationDetails | null>(null);
+  const [scores, setScores] = useState<{ questionId: number; score: number }[]>(
+    []
   );
 
+  const fetchData = useCallback(async () => {
+    const evaluationData = await fetchEvaluationById(Number(params.id));
+    if (!evaluationData) {
+      redirect("/404");
+    } else {
+      setEvaluation(evaluationData);
+      setScores(
+        evaluationData.setup.sections.flatMap((section) =>
+          section.questions.map((question) => ({
+            questionId: question.id,
+            score: question.answer?.score || 0,
+          }))
+        )
+      );
+    }
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleScoreChange = (questionId: number, newScore: number) => {
+    setScores((prevScores) =>
+      prevScores.map((score) =>
+        score.questionId === questionId ? { ...score, score: newScore } : score
+      )
+    );
+  };
+
+  const handleSaveScore = async (
+    questionId: number,
+    score: number,
+    evaluationId: number
+  ) => {
+    try {
+      await updateAnswerScore({ questionId, score, evaluationId });
+      Swal.fire("Success", "Score saved successfully.", "success");
+    } catch (error) {
+      console.error("Error saving score:", error);
+      Swal.fire("Error", "Failed to save score.", "error");
+    }
+  };
+  
+
   if (!evaluation) {
-    return redirect("/404");
+    return <div>Loading...</div>;
   }
 
   return (
@@ -28,7 +72,6 @@ export default async function EvaluationDetailsPage({
         Evaluation Details
       </h1>
 
-      {/* Main Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-700">
@@ -54,7 +97,6 @@ export default async function EvaluationDetailsPage({
           </div>
         </div>
 
-        {/* Major Names */}
         <div className="bg-white p-6 shadow-md rounded-lg mb-6">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">
             Major Name
@@ -65,7 +107,6 @@ export default async function EvaluationDetailsPage({
         </div>
       </div>
 
-      {/* Setup Details */}
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">
         <h2 className="text-xl font-semibold text-gray-700 mb-4">Setup</h2>
         <p className="text-gray-600">
@@ -75,7 +116,6 @@ export default async function EvaluationDetailsPage({
           <span className="font-semibold">Name:</span> {evaluation.setup.name}
         </p>
 
-        {/* Sections Table */}
         <h3 className="text-lg font-semibold text-gray-700 mt-6">Form Data</h3>
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full bg-white shadow-md rounded-lg border border-gray-300">
@@ -105,7 +145,6 @@ export default async function EvaluationDetailsPage({
                     {section.name}
                   </td>
                   <td className="border border-gray-300">
-                    {/* Table for Questions */}
                     <table className="min-w-full bg-gray-50 text-left border-collapse">
                       <thead>
                         <tr>
@@ -124,6 +163,9 @@ export default async function EvaluationDetailsPage({
                           <th className="py-1 px-2 text-gray-600 border border-gray-300 w-5/12">
                             Answer
                           </th>
+                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-5/12">
+                            Score
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -135,9 +177,6 @@ export default async function EvaluationDetailsPage({
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
                               {question.sequence}
                             </td>
-                            {/* <td className="py-1 px-2 text-gray-500 border border-gray-300">
-                              {question.id}
-                            </td> */}
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
                               {question.parent_id || "-"}
                             </td>
@@ -149,6 +188,38 @@ export default async function EvaluationDetailsPage({
                             </td>
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">
                               {question.answer?.answer || "-"}
+                            </td>
+                            <td className="py-1 px-2 text-gray-500 flex items-center gap-2">
+                              <input
+                                type="text"
+                                className="border p-1 rounded text-center w-16"
+                                value={
+                                  scores.find(
+                                    (score) => score.questionId === question.id
+                                  )?.score || 0
+                                }
+                                onChange={(e) =>
+                                  handleScoreChange(
+                                    question.id,
+                                    Number(e.target.value)
+                                  )
+                                }
+                              />
+                              <button
+                                onClick={() =>
+                                  handleSaveScore(
+                                    question.id,
+                                    scores.find(
+                                      (score) =>
+                                        score.questionId === question.id
+                                    )?.score || 0,
+                                    evaluation.id
+                                  )
+                                }
+                                className="px-4 py-1 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-200"
+                              >
+                                Save
+                              </button>
                             </td>
                           </tr>
                         ))}

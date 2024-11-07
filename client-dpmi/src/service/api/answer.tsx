@@ -36,6 +36,26 @@ export async function updateAnswer(
   }
 }
 
+interface UpdateAnswerScoreParams {
+  evaluationId: number;
+  questionId: number;
+  score: number;
+}
+
+export async function updateAnswerScore({ questionId, score, evaluationId } : UpdateAnswerScoreParams) {
+  try {
+    const response = await axios.put(`${API_ANSWER}/update-score`, {
+      questionId,
+      score,
+      evaluationId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating answer score:", error);
+    throw error;
+  }
+}
+
 export async function deleteAnswer(answerId: number): Promise<void> {
   try {
     await axios.delete(`${API_ANSWER}/${answerId}`);
