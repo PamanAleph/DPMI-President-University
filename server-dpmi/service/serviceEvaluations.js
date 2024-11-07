@@ -60,7 +60,9 @@ const findById = async (id) => {
         sec.sequence, q.sequence;
     `;
 
-    const { rows: evaluationData } = await client.query(evaluationQuery, [numericId]);
+    const { rows: evaluationData } = await client.query(evaluationQuery, [
+      numericId,
+    ]);
 
     if (!evaluationData.length) {
       return null;
@@ -126,7 +128,6 @@ const findById = async (id) => {
     throw new Error(`Could not fetch evaluation with ID ${id}: ${err.message}`);
   }
 };
-
 
 const createData = async (data) => {
   try {

@@ -5,6 +5,7 @@ import { updateAnswerScore } from "@/service/api/answer";
 import { redirect } from "next/navigation";
 import React, { useState, useEffect, useCallback } from "react";
 import Swal from "sweetalert2";
+import SkeletonLoader from "@/components/admin/evaluations/SkeletonLoader";
 
 interface EvaluationDetailsPageProps {
   params: { id: string };
@@ -63,7 +64,7 @@ export default function EvaluationDetailsPage({
   
 
   if (!evaluation) {
-    return <div>Loading...</div>;
+    return SkeletonLoader();
   }
 
   return (

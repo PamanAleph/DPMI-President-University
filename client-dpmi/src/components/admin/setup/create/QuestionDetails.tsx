@@ -24,6 +24,7 @@ export default function QuestionDetails() {
     sequence: 1,
     parent_id: null,
     section_id: null,
+    answer: null
   });
 
   const handleQuestionChange = (
@@ -89,6 +90,7 @@ export default function QuestionDetails() {
           sequence: question.sequence + 1,
           parent_id: null,
           section_id: question.section_id,
+          answer: null
         });
       } else {
         Swal.fire("Error", "Failed to retrieve question ID!", "error");
