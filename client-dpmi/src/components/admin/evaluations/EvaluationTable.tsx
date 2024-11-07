@@ -52,7 +52,7 @@ export default function EvaluationTable({ evaluations }: EvaluationTableProps) {
                 {new Date(evaluation.end_date).toLocaleDateString()}
               </td>
               <td className="whitespace-nowrap px-4 py-2 text-center">
-                <EvaluationActions evaluationId={evaluation.id} evaluation={evaluation} />
+                <EvaluationActions evaluationId={evaluation.id ?? 0} evaluation={evaluation} />
               </td>
             </tr>
           ))}

@@ -7,7 +7,7 @@ interface Questions {
   sequence: number;
   parent_id: number | null;
   section_id: number | null;
-  answer: Answer;
+  answer?: Answer | null;
 }
 
 export default Questions;
