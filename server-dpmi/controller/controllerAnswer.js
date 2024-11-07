@@ -4,7 +4,8 @@ const {
   insertAnswer,
   updateAnswer,
   deleteAnswer,
-  fetchAnswerByEvaluationId
+  fetchAnswerByEvaluationId,
+  updateScore,
 } = require("../service/serviceAnswer");
 
 const getAllData = async (req, res) => {
@@ -66,7 +67,12 @@ const getDataById = async (req, res) => {
 
 const createAnswer = async (req, res) => {
   try {
-    const { question_id, answer = null, evaluation_id, score = null } = req.body;
+    const {
+      question_id,
+      answer = null,
+      evaluation_id,
+      score = null,
+    } = req.body;
 
     if (!question_id || !evaluation_id) {
       return res.status(400).json({
@@ -78,7 +84,12 @@ const createAnswer = async (req, res) => {
       });
     }
 
-    const newAnswer = await insertAnswer(evaluation_id, question_id, answer, score);
+    const newAnswer = await insertAnswer(
+      evaluation_id,
+      question_id,
+      answer,
+      score
+    );
     res.status(201).json({
       response: {
         status: "success",
@@ -133,7 +144,6 @@ const updateAnswerData = async (req, res) => {
     });
   }
 };
-
 
 // Delete an answer
 const deleteAnswerData = async (req, res) => {
@@ -196,6 +206,53 @@ const getAnswersByEvaluationId = async (req, res) => {
   }
 };
 
+const updateScoreData = async (req, res) => {
+  try {
+    const { questionId, score, evaluationId } = req.body;
+    const payload = Array.isArray(req.body)
+      ? req.body
+      : [{ questionId, score, evaluationId }];
+    const invalidItem = payload.find(
+      (item) =>
+        item.questionId == null ||
+        item.score == null ||
+        item.evaluationId == null
+    );
+
+    if (invalidItem) {
+      return res.status(400).json({
+        response: {
+          status: "error",
+          message:
+            "Each item must have questionId, score, and evaluationId fields",
+        },
+        data: null,
+      });
+    }
+    const updatePromises = payload.map((item) =>
+      updateScore(item.questionId, item.score, item.evaluationId)
+    );
+    const updatedScores = await Promise.all(updatePromises);
+
+    res.json({
+      response: {
+        status: "success",
+        message: "Scores updated successfully",
+      },
+      data: updatedScores,
+    });
+  } catch (err) {
+    console.error("Internal server error:", err);
+    res.status(500).json({
+      response: {
+        status: "error",
+        message: "Failed to update scores",
+        details: err.message,
+      },
+      data: null,
+    });
+  }
+};
 
 module.exports = {
   getAllData,
@@ -203,5 +260,6 @@ module.exports = {
   createAnswer,
   updateAnswerData,
   deleteAnswerData,
-  getAnswersByEvaluationId
+  getAnswersByEvaluationId,
+  updateScoreData,
 };
