@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import { createQuestion } from "@/service/api/questions";
+import { createOptions } from "@/service/api/options"; // Assumes you have this in your service
 import Select from "react-select";
 import Button from "../../Button";
 import Questions from "@/models/questions";
@@ -10,10 +11,7 @@ import { useRouter } from "next/navigation";
 export default function QuestionDetails() {
   const router = useRouter();
 
-  // Initialize sections from localStorage directly
   const initialSections = JSON.parse(localStorage.getItem("section") || "[]");
-
-  // Initialize questions from localStorage directly
   const initialQuestions = JSON.parse(localStorage.getItem("question") || "[]");
 
   const [sections] = useState<{ id: number; name: string }[]>(initialSections);
@@ -26,6 +24,8 @@ export default function QuestionDetails() {
     section_id: null,
     answer: null
   });
+
+  const [options, setOptions] = useState<{ option: string; score: number; sequence: number }[]>([]);
 
   const handleQuestionChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -55,15 +55,33 @@ export default function QuestionDetails() {
     }));
   };
 
+  const addOption = () => {
+    setOptions([
+      ...options,
+      { option: "", score: 0, sequence: options.length + 1 }
+    ]);
+  };
+
+  const handleOptionChange = (
+    index: number,
+    field: "option" | "score",
+    value: string | number
+  ) => {
+    const newOptions = options.map((opt, i) =>
+      i === index ? { ...opt, [field]: value } : opt
+    );
+    setOptions(newOptions);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+  
     if (!question.section_id) {
       Swal.fire("Error", "Please select a section!", "error");
       return;
     }
-
+  
     try {
-      // Create question with section_id only
       const payload = {
         question: question.question,
         type: question.type,
@@ -71,19 +89,26 @@ export default function QuestionDetails() {
         section_id: question.section_id,
         parent_id: question.parent_id,
       };
-
-      // API call to create question
+  
       const createdQuestion = await createQuestion(payload);
-
-      // Update questions in localStorage with new ID
+  
       if (createdQuestion && createdQuestion.id) {
+        if (["select", "radio"].includes(question.type) && options.length > 0) {
+          const optionsPayload = {
+            question_id: createdQuestion.id,
+            options: options
+          };
+          
+          console.log("Sending options payload:", optionsPayload); // Log payload for debugging
+          await createOptions(optionsPayload);
+        }
+  
         const newQuestions = [...questions, createdQuestion];
         setQuestions(newQuestions);
         localStorage.setItem("question", JSON.stringify(newQuestions));
-
+  
         Swal.fire("Success", "Question added successfully!", "success");
-
-        // Reset question form
+  
         setQuestion({
           question: "",
           type: "text",
@@ -92,6 +117,7 @@ export default function QuestionDetails() {
           section_id: question.section_id,
           answer: null
         });
+        setOptions([]);
       } else {
         Swal.fire("Error", "Failed to retrieve question ID!", "error");
       }
@@ -99,7 +125,7 @@ export default function QuestionDetails() {
       console.error("Failed to create question:", error);
       Swal.fire("Error", "Failed to add question!", "error");
     }
-  };
+  };  
 
   const handleEndQuestions = () => {
     Swal.fire({
@@ -110,9 +136,7 @@ export default function QuestionDetails() {
       confirmButtonText: "Yes, end it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        // Clear all data in localStorage
         localStorage.clear();
-
         Swal.fire("Ended!", "Question session has ended.", "success");
         router.push("/admin/setup");
       }
@@ -171,6 +195,7 @@ export default function QuestionDetails() {
             <option value="email">Email</option>
             <option value="radio">Radio</option>
             <option value="checkbox">Checkbox</option>
+            <option value="textarea">Text Area</option>
           </select>
           <p className="border border-gray-300 rounded-md p-2">
             Sequence: {question.sequence}
@@ -186,6 +211,44 @@ export default function QuestionDetails() {
               null
             }
           />
+
+          {/* Conditionally render options if the question type is select or radio */}
+          {["select", "radio"].includes(question.type) && (
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold">Options</h3>
+              {options.map((opt, index) => (
+                <div key={index} className="flex gap-4 items-center mb-2">
+                  <input
+                    type="text"
+                    placeholder={`Option ${index + 1}`}
+                    value={opt.option}
+                    onChange={(e) =>
+                      handleOptionChange(index, "option", e.target.value)
+                    }
+                    className="border p-1 rounded w-full"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Score"
+                    value={opt.score}
+                    onChange={(e) =>
+                      handleOptionChange(index, "score", Number(e.target.value))
+                    }
+                    className="border p-1 rounded w-20"
+                    required
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addOption}
+                className="px-3 py-1 bg-gray-200 rounded-md hover:bg-gray-300 transition"
+              >
+                + Add Option
+              </button>
+            </div>
+          )}
         </div>
         <div className="flex items-center space-x-4">
           <Button

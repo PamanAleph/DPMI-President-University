@@ -9,5 +9,6 @@ export const API_ROLE = BASE_URL + "/roles"
 export const API_AUTH = BASE_URL + "/auth"
 export const API_ANSWER = BASE_URL + "/answers"
 export const API_DOWNLOAD = BASE_URL + "/download"
+export const API_OPTION = BASE_URL + "/options"
 
 export const USER_SECRECTKEY = process.env.USER_SECRETKEY || "default-secret-key";

@@ -41,7 +41,8 @@ const findById = async (id) => {
         s.*, 
         sec.id AS section_id, sec.name AS section_name, sec.sequence AS section_sequence,
         q.id AS question_id, q.question, q.type, q.parent_id, q.sequence AS question_sequence,
-        a.id AS answer_id, a.answer, a.score
+        a.id AS answer_id, a.answer, a.score,
+        o.id AS option_id, o.option AS option_text, o.score AS option_score, o.sequence AS option_sequence
       FROM 
         evaluations e
       LEFT JOIN 
@@ -54,10 +55,12 @@ const findById = async (id) => {
         questions q ON sec.id = q.section_id
       LEFT JOIN 
         answers a ON q.id = a.question_id AND a.evaluation_id = e.id
+      LEFT JOIN 
+        options o ON q.id = o.question_id
       WHERE 
         e.id = $1
       ORDER BY 
-        sec.sequence, q.sequence;
+        sec.sequence, q.sequence, o.sequence;
     `;
 
     const { rows: evaluationData } = await client.query(evaluationQuery, [
@@ -69,8 +72,8 @@ const findById = async (id) => {
     }
 
     const evaluation = evaluationData[0];
-
     const sectionsMap = {};
+
     evaluationData.forEach((row) => {
       // Group sections
       if (!sectionsMap[row.section_id]) {
@@ -83,26 +86,42 @@ const findById = async (id) => {
         };
       }
 
-      // Group questions with answers
+      // Group questions with answers and options
       if (row.question_id) {
-        const question = {
-          id: row.question_id,
-          section_id: row.section_id,
-          question: row.question,
-          type: row.type,
-          parent_id: row.parent_id,
-          sequence: row.question_sequence,
-          // Ensure answer is always present
-          answer: row.answer_id
-            ? {
-                id: row.answer_id,
-                answer: row.answer,
-                score: row.score,
-              }
-            : { id: null, answer: null, score: null },
-        };
+        // Find or create the question object
+        let question = sectionsMap[row.section_id].questions.find(
+          (q) => q.id === row.question_id
+        );
+        
+        if (!question) {
+          question = {
+            id: row.question_id,
+            section_id: row.section_id,
+            question: row.question,
+            type: row.type,
+            parent_id: row.parent_id,
+            sequence: row.question_sequence,
+            answer: row.answer_id
+              ? {
+                  id: row.answer_id,
+                  answer: row.answer,
+                  score: row.score,
+                }
+              : { id: null, answer: null, score: null },
+            options: [],
+          };
+          sectionsMap[row.section_id].questions.push(question);
+        }
 
-        sectionsMap[row.section_id].questions.push(question);
+        // Add options to the question
+        if (row.option_id) {
+          question.options.push({
+            id: row.option_id,
+            option: row.option_text,
+            score: row.option_score,
+            sequence: row.option_sequence,
+          });
+        }
       }
     });
 

@@ -70,17 +70,23 @@ const findSetupById = async (id) => {
         s.name AS setup_name, 
         s.slug AS setup_slug,
         sec.id AS section_id, 
-        sec.name AS name,
-        sec.sequence AS sequence,
+        sec.name AS section_name,
+        sec.sequence AS section_sequence,
         q.id AS question_id,
         q.type AS question_type,
-        q.question AS question,
+        q.question AS question_description,
         q.parent_id AS question_parent_id,
-        q.sequence AS question_sequence
+        q.sequence AS question_sequence,
+        o.id AS option_id,
+        o.option AS option_text,
+        o.score AS option_score,
+        o.sequence AS option_sequence
       FROM setup s
       LEFT JOIN sections sec ON s.id = sec.setup_id
       LEFT JOIN questions q ON sec.id = q.section_id
+      LEFT JOIN options o ON q.id = o.question_id
       WHERE s.id = $1
+      ORDER BY sec.sequence, q.sequence, o.sequence
     `, [id]);
 
     if (setupData.rowCount === 0) {
@@ -95,30 +101,49 @@ const findSetupById = async (id) => {
     };
 
     const sectionMap = new Map();
+    const questionMap = new Map();
 
     setupData.rows.forEach(row => {
+      // Group sections
       if (!sectionMap.has(row.section_id) && row.section_id) {
         sectionMap.set(row.section_id, {
           id: row.section_id,
-          section_name: row.section_name,
+          name: row.section_name,
           sequence: row.section_sequence,
           questions: []
         });
         setupMap.sections.push(sectionMap.get(row.section_id));
       }
 
+      // Group questions within sections
       if (row.question_id) {
-        sectionMap.get(row.section_id).questions.push({
-          id: row.question_id,
-          type: row.question_type,
-          question_description: row.question_description,
-          parent_id: row.question_parent_id,
-          sequence: row.question_sequence
-        });
+        if (!questionMap.has(row.question_id)) {
+          questionMap.set(row.question_id, {
+            id: row.question_id,
+            type: row.question_type,
+            question: row.question,
+            parent_id: row.question_parent_id,
+            sequence: row.question_sequence,
+            options: []
+          });
+          sectionMap.get(row.section_id).questions.push(questionMap.get(row.question_id));
+        }
+
+        // Add options to questions if available
+        if (row.option_id) {
+          questionMap.get(row.question_id).options.push({
+            id: row.option_id,
+            text: row.option_text,
+            score: row.option_score,
+            sequence: row.option_sequence
+          });
+        }
       }
     });
 
-    return setupMap;
+    return {
+      setupMap
+    };
   } catch (err) {
     console.error("Error fetching setup by ID:", err);
     throw err;
