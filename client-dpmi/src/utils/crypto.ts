@@ -1,7 +1,7 @@
 import CryptoJS from "crypto-js";
 import { USER_SECRECTKEY } from "@/config/config";
 
-// Encrypts an ID and makes it URL-safe
+
 export const encryptId = (id: number): string => {
   const encrypted = CryptoJS.AES.encrypt(
     id.toString(),
@@ -11,12 +11,10 @@ export const encryptId = (id: number): string => {
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
-  console.log("Encrypted ID (URL-safe):", urlSafeEncrypted);
 
   return urlSafeEncrypted;
 };
 
-// Decrypts a URL-safe Base64 encrypted ID
 export const decryptId = (encryptedId: string): number | null => {
   try {
     if (!encryptedId) {
