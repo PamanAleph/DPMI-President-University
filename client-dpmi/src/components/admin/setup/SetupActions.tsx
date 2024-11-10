@@ -59,11 +59,21 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
 
     if (setupData) {
       try {
+        Swal.fire({
+          title: "Updating...",
+          text: "Please wait while the setup is being updated.",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
         await updateSetupNameAndSlug({
           id: setupId,
           name: setupData.name,
           slug: setupData.slug,
         });
+        Swal.close();
         Swal.fire("Updated!", "The setup has been updated.", "success").then(
           () => {
             window.location.reload();
@@ -93,7 +103,16 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
+          Swal.fire({
+            title: "Deleting...",
+            text: "Please wait while the setup is being deleted.",
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
           await deleteSetup(setupId);
+          Swal.close();
           Swal.fire("Deleted!", "The setup has been deleted.", "success").then(
             () => {
               window.location.reload();
@@ -180,6 +199,14 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
         ? formValues.majorIds
         : [];
       try {
+        Swal.fire({
+          title: "Generating...",
+          text: "Please wait while the evaluation is being Generated.",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
         for (const majorId of majorIds) {
           const evaluationCheckData = {
             setupId,
@@ -222,7 +249,7 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
             });
           }
         }
-
+        Swal.close();
         Swal.fire(
           "Success!",
           "Evaluations and answers generated successfully.",

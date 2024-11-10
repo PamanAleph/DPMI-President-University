@@ -93,7 +93,7 @@ const findSetupById = async (id) => {
       return null;
     }
 
-    const setupMap = {
+    const result = {
       id: setupData.rows[0].setup_id,
       name: setupData.rows[0].setup_name,
       slug: setupData.rows[0].setup_slug,
@@ -112,7 +112,7 @@ const findSetupById = async (id) => {
           sequence: row.section_sequence,
           questions: []
         });
-        setupMap.sections.push(sectionMap.get(row.section_id));
+        result.sections.push(sectionMap.get(row.section_id));
       }
 
       // Group questions within sections
@@ -121,7 +121,7 @@ const findSetupById = async (id) => {
           questionMap.set(row.question_id, {
             id: row.question_id,
             type: row.question_type,
-            question: row.question,
+            question: row.question_description,
             parent_id: row.question_parent_id,
             sequence: row.question_sequence,
             options: []
@@ -133,7 +133,7 @@ const findSetupById = async (id) => {
         if (row.option_id) {
           questionMap.get(row.question_id).options.push({
             id: row.option_id,
-            text: row.option_text,
+            option: row.option_text,
             score: row.option_score,
             sequence: row.option_sequence
           });
@@ -141,14 +141,14 @@ const findSetupById = async (id) => {
       }
     });
 
-    return {
-      setupMap
-    };
+    return result; // Return the structure directly
+
   } catch (err) {
     console.error("Error fetching setup by ID:", err);
     throw err;
   }
 };
+
 
 // Create setup data
 const createData = async (data) => {
@@ -201,12 +201,17 @@ const findBySlug = async (slug) => {
         q.parent_id AS question_parent_id, 
         q.sequence AS question_sequence, 
         q.question AS question_text, 
-        q.type AS question_type
+        q.type AS question_type,
+        o.id AS option_id,
+        o.option AS option_text,
+        o.score AS option_score,
+        o.sequence AS option_sequence
       FROM setup s
       LEFT JOIN sections sec ON sec.setup_id = s.id
       LEFT JOIN questions q ON q.section_id = sec.id
+      LEFT JOIN options o ON o.question_id = q.id
       WHERE s.slug = $1
-      ORDER BY sec.sequence, q.sequence;
+      ORDER BY sec.sequence, q.sequence, o.sequence;
     `;
 
     const result = await client.query(query, [slug]);
@@ -218,7 +223,10 @@ const findBySlug = async (slug) => {
     const setupData = result.rows[0];
 
     const sectionsMap = new Map();
+    const questionsMap = new Map();
+
     result.rows.forEach((row) => {
+      // Process sections
       if (!sectionsMap.has(row.section_id)) {
         sectionsMap.set(row.section_id, {
           id: row.section_id,
@@ -228,20 +236,34 @@ const findBySlug = async (slug) => {
         });
       }
 
+      // Process questions
       if (row.question_id) {
-        sectionsMap.get(row.section_id).questions.push({
-          id: row.question_id,
-          parent_id: row.question_parent_id,
-          sequence: row.question_sequence,
-          question: row.question_text,
-          type: row.question_type,
-        });
+        if (!questionsMap.has(row.question_id)) {
+          questionsMap.set(row.question_id, {
+            id: row.question_id,
+            parent_id: row.question_parent_id,
+            sequence: row.question_sequence,
+            question: row.question_text,
+            type: row.question_type,
+            options: [],
+          });
+          sectionsMap.get(row.section_id).questions.push(questionsMap.get(row.question_id));
+        }
+
+        if (row.option_id) {
+          questionsMap.get(row.question_id).options.push({
+            id: row.option_id,
+            option: row.option_text,
+            score: row.option_score,
+            sequence: row.option_sequence,
+          });
+        }
       }
     });
 
     const sections = Array.from(sectionsMap.values());
 
-    // Return the setup object with nested sections and questions
+    // Return the setup object with nested sections, questions, and options
     return {
       id: setupData.setup_id,
       name: setupData.setup_name,
