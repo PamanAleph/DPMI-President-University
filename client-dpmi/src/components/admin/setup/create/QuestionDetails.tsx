@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import { createQuestion } from "@/service/api/questions";
-import { createOptions } from "@/service/api/options"; // Assumes you have this in your service
+import { createOptions } from "@/service/api/options";
 import Select from "react-select";
 import Button from "../../Button";
 import Questions from "@/models/questions";
@@ -22,7 +22,7 @@ export default function QuestionDetails() {
     sequence: 1,
     parent_id: null,
     section_id: null,
-    answer: null
+    answer: null,
   });
 
   const [options, setOptions] = useState<{ option: string; score: number; sequence: number }[]>([]);
@@ -58,7 +58,7 @@ export default function QuestionDetails() {
   const addOption = () => {
     setOptions([
       ...options,
-      { option: "", score: 0, sequence: options.length + 1 }
+      { option: "", score: 0, sequence: options.length + 1 },
     ]);
   };
 
@@ -75,12 +75,12 @@ export default function QuestionDetails() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (!question.section_id) {
       Swal.fire("Error", "Please select a section!", "error");
       return;
     }
-  
+
     try {
       const payload = {
         question: question.question,
@@ -89,33 +89,31 @@ export default function QuestionDetails() {
         section_id: question.section_id,
         parent_id: question.parent_id,
       };
-  
+
       const createdQuestion = await createQuestion(payload);
-  
+
       if (createdQuestion && createdQuestion.id) {
-        if (["select", "radio"].includes(question.type) && options.length > 0) {
+        if (["select", "radio", "checkbox"].includes(question.type) && options.length > 0) {
           const optionsPayload = {
             question_id: createdQuestion.id,
-            options: options
+            options: options,
           };
-          
-          console.log("Sending options payload:", optionsPayload); // Log payload for debugging
           await createOptions(optionsPayload);
         }
-  
+
         const newQuestions = [...questions, createdQuestion];
         setQuestions(newQuestions);
         localStorage.setItem("question", JSON.stringify(newQuestions));
-  
+
         Swal.fire("Success", "Question added successfully!", "success");
-  
+
         setQuestion({
           question: "",
           type: "text",
           sequence: question.sequence + 1,
           parent_id: null,
           section_id: question.section_id,
-          answer: null
+          answer: null,
         });
         setOptions([]);
       } else {
@@ -125,7 +123,7 @@ export default function QuestionDetails() {
       console.error("Failed to create question:", error);
       Swal.fire("Error", "Failed to add question!", "error");
     }
-  };  
+  };
 
   const handleEndQuestions = () => {
     Swal.fire({
@@ -212,8 +210,8 @@ export default function QuestionDetails() {
             }
           />
 
-          {/* Conditionally render options if the question type is select or radio */}
-          {["select", "radio"].includes(question.type) && (
+          {/* Conditionally render options for radio and checkbox types */}
+          {["radio", "checkbox"].includes(question.type) && (
             <div className="mt-4">
               <h3 className="text-lg font-semibold">Options</h3>
               {options.map((opt, index) => (

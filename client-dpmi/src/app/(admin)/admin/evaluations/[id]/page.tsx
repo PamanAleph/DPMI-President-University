@@ -54,14 +54,22 @@ export default function EvaluationDetailsPage({
     evaluationId: number
   ) => {
     try {
+      Swal.fire({
+        title: "Updating...",
+        text: "Please wait while the evaluation is being updated.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
       await updateAnswerScore({ questionId, score, evaluationId });
+      Swal.close();
       Swal.fire("Success", "Score saved successfully.", "success");
     } catch (error) {
       console.error("Error saving score:", error);
       Swal.fire("Error", "Failed to save score.", "error");
     }
   };
-  
 
   if (!evaluation) {
     return SkeletonLoader();
@@ -122,13 +130,13 @@ export default function EvaluationDetailsPage({
           <table className="min-w-full bg-white shadow-md rounded-lg border border-gray-300">
             <thead className="bg-gray-200">
               <tr className="text-center">
-                <th className="py-2 px-4 text-gray-700 border border-gray-300 w-1/12">
+                <th className="py-2 px-2 text-gray-700 border border-gray-300 w-[5%]">
                   Section Sequence
                 </th>
-                <th className="py-2 px-4 text-gray-700 border border-gray-300 w-3/12">
+                <th className="py-2 px-4 text-gray-700 border border-gray-300 w-[25%]">
                   Section Name
                 </th>
-                <th className="py-2 px-4 text-gray-700 border border-gray-300 w-full">
+                <th className="py-2 px-4 text-gray-700 border border-gray-300 w-[70%]">
                   Questions
                 </th>
               </tr>
@@ -139,32 +147,32 @@ export default function EvaluationDetailsPage({
                   key={sectionIndex}
                   className="border-b text-center hover:bg-gray-50"
                 >
-                  <td className="py-2 px-4 text-gray-600 border border-gray-300">
+                  <td className="py-2 px-2 text-gray-600 border border-gray-300">
                     {section.sequence}
                   </td>
-                  <td className="py-2 px-4 text-gray-600 border border-gray-300">
+                  <td className="py-2 px-4 text-gray-600 border border-gray-300 text-justify">
                     {section.name}
                   </td>
                   <td className="border border-gray-300">
                     <table className="min-w-full bg-gray-50 text-left border-collapse">
                       <thead>
                         <tr>
-                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-1/12">
+                          <th className="py-1 px-1 text-gray-600 border border-gray-300 w-[5%]">
                             No
                           </th>
-                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-2/12">
+                          <th className="py-1 px-1 text-gray-600 border border-gray-300 w-[10%]">
                             Parent ID
                           </th>
-                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-2/12">
+                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-[15%]">
                             Type
                           </th>
-                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-5/12">
+                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-[30%]">
                             Question
                           </th>
-                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-5/12">
+                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-[20%]">
                             Answer
                           </th>
-                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-5/12">
+                          <th className="py-1 px-2 text-gray-600 border border-gray-300 w-[20%]">
                             Score
                           </th>
                         </tr>
@@ -175,10 +183,10 @@ export default function EvaluationDetailsPage({
                             key={questionIndex}
                             className="border-b text-justify"
                           >
-                            <td className="py-1 px-2 text-gray-500 border border-gray-300">
+                            <td className="py-1 px-1 text-gray-500 border border-gray-300 text-center">
                               {question.sequence}
                             </td>
-                            <td className="py-1 px-2 text-gray-500 border border-gray-300">
+                            <td className="py-1 px-1 text-gray-500 border border-gray-300 text-center">
                               {question.parent_id || "-"}
                             </td>
                             <td className="py-1 px-2 text-gray-500 border border-gray-300">

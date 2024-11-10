@@ -23,7 +23,7 @@ export default function EvaluationActions({
 }: EvaluationActionsProps) {
   const handleCopyLink = () => {
     const encryptedId = encryptId(evaluation.id ?? 0);
-    localStorage.setItem("url" ,encryptedId)
+    localStorage.setItem("url", encryptedId);
     const formUrl = `${window.location.origin}/form/${encryptedId}`;
     navigator.clipboard
       .writeText(formUrl)
@@ -47,7 +47,7 @@ export default function EvaluationActions({
   const handleEditEvaluation = async () => {
     const evaluationData: Setup[] = await fetchSetup();
     const majorResponse = await fetchMajor();
-  
+
     // Define the list of majors with proper typing
     const majorList: { id: number; major_name: string }[] = majorResponse.map(
       (major: Major) => ({
@@ -55,37 +55,51 @@ export default function EvaluationActions({
         major_name: major.name,
       })
     );
-  
-    // Pre-select the current major of the evaluation
-    const selectedMajor = majorList.find((major) => major.id === evaluation.major_id)
-      ? { label: majorList.find((major) => major.id === evaluation.major_id)?.major_name || "Unknown Major", value: evaluation.major_id }
-      : { label: "Unknown Major", value: 0 }; // Fallback if no major is found
-  
+
+    const selectedMajor = majorList.find(
+      (major) => major.id === evaluation.major_id
+    )
+      ? {
+          label:
+            majorList.find((major) => major.id === evaluation.major_id)
+              ?.major_name || "Unknown Major",
+          value: evaluation.major_id,
+        }
+      : { label: "Unknown Major", value: 0 }; 
+
     const selectedSetup = {
       label: evaluation.setup_name ?? "Unknown Setup",
       value: evaluation.setup_id,
     };
-  
+
     const { value: formValues } = await Swal.fire({
       title: "Edit Evaluation",
       html: `
         <div id="select-major"></div>
         <div id="select-setup"></div>
-        <input type="text" id="semester" class="swal2-input" value="${evaluation.semester}" placeholder="Semester" />
-        <input type="date" id="end-date" class="swal2-input" value="${new Date(evaluation.end_date).toISOString().split("T")[0]}" placeholder="End Date" />
+        <input type="text" id="semester" class="swal2-input" value="${
+          evaluation.semester
+        }" placeholder="Semester" />
+        <input type="date" id="end-date" class="swal2-input" value="${
+          new Date(evaluation.end_date).toISOString().split("T")[0]
+        }" placeholder="End Date" />
       `,
       focusConfirm: false,
       preConfirm: () => {
         const selectedMajorId = selectedMajor.value;
         const setupId = selectedSetup.value;
-        const semester = (document.getElementById("semester") as HTMLInputElement)?.value;
-        const end_date = (document.getElementById("end-date") as HTMLInputElement)?.value;
-  
+        const semester = (
+          document.getElementById("semester") as HTMLInputElement
+        )?.value;
+        const end_date = (
+          document.getElementById("end-date") as HTMLInputElement
+        )?.value;
+
         if (!selectedMajorId || !semester || !end_date || !setupId) {
           Swal.showValidationMessage("Please fill all fields");
           return null;
         }
-  
+
         return { setupId, majorId: selectedMajorId, semester, end_date };
       },
       didOpen: async () => {
@@ -108,14 +122,14 @@ export default function EvaluationActions({
             />
           );
         }
-  
+
         const setupSelectContainer = document.getElementById("select-setup");
         if (setupSelectContainer) {
           const setupOptions = evaluationData.map((setup: Setup) => ({
             label: setup.name,
             value: setup.id,
           }));
-  
+
           const root = createRoot(setupSelectContainer);
           root.render(
             <Select
@@ -135,9 +149,18 @@ export default function EvaluationActions({
       confirmButtonText: "Update",
       cancelButtonText: "Cancel",
     });
-  
+
     if (formValues) {
       try {
+        Swal.fire({
+          title: "Updating...",
+          text: "Please wait while the evaluation is being updated.",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
         await updateEvaluation({
           id: evaluation.id,
           setup_id: formValues.setupId,
@@ -145,18 +168,26 @@ export default function EvaluationActions({
           semester: formValues.semester,
           end_date: new Date(formValues.end_date),
         });
-  
-        Swal.fire("Updated!", "The evaluation has been updated.", "success").then(() => {
+
+        Swal.close();
+        Swal.fire(
+          "Updated!",
+          "The evaluation has been updated.",
+          "success"
+        ).then(() => {
           window.location.reload();
         });
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-        Swal.fire("Error", `Failed to update the evaluation: ${errorMessage}`, "error");
+        const errorMessage =
+          error instanceof Error ? error.message : "An unknown error occurred";
+        Swal.fire(
+          "Error",
+          `Failed to update the evaluation: ${errorMessage}`,
+          "error"
+        );
       }
     }
   };
-  
-  
 
   const handleDeleteEvaluation = async () => {
     Swal.fire({
@@ -169,7 +200,18 @@ export default function EvaluationActions({
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
+
+          Swal.fire({
+            title: "Updating...",
+            text: "Please wait while the evaluation is being deleted.",
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            },
+          });
+
           await deleteEvaluation(evaluation.id ?? 0);
+          Swal.close();
           Swal.fire(
             "Deleted!",
             "The evaluation has been deleted.",

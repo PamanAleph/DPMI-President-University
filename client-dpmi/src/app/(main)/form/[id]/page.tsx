@@ -100,30 +100,44 @@ export default function EvaluationDetailsPage({
             defaultValue={answerValue}
           ></textarea>
         );
+      case "radio":
+        return (
+          <div>
+            {question.options?.map((option) => (
+              <label key={option.id} className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name={`question_${question.id}`}
+                  value={option.option}
+                  data-score={option.score}
+                  className="h-4 w-4 text-blue-600 border-gray-300"
+                  defaultChecked={answerValue === option.option}
+                />
+                <span className="text-gray-800">{option.option}</span>
+              </label>
+            ))}
+          </div>
+        );
       case "checkbox":
         return (
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              name={`question_${question.id}`}
-              className="h-5 w-5 text-blue-600 border border-gray-300 rounded-md focus:ring-blue-500"
-              defaultChecked={answerValue === "true"}
-            />
-            <label className="text-gray-800 font-medium">
-              {question.question}
-            </label>
+          <div>
+            {question.options?.map((option) => (
+              <label key={option.id} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  name={`question_${question.id}`}
+                  value={option.option}
+                  data-score={option.score}
+                  className="h-4 w-4 text-blue-600 border-gray-300"
+                  defaultChecked={answerValue === option.option}
+                />
+                <span className="text-gray-800">{option.option}</span>
+              </label>
+            ))}
           </div>
         );
       default:
-        return (
-          <input
-            type="text"
-            name={`question_${question.id}`}
-            className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-all shadow-sm"
-            placeholder={question.question}
-            defaultValue={answerValue}
-          />
-        );
+        return null;
     }
   };
 
@@ -132,30 +146,54 @@ export default function EvaluationDetailsPage({
     if (!evaluation) return;
 
     try {
+      Swal.fire({
+        title: "Submitting...",
+        text: "Please wait while the evaluation is being submited.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const answers = evaluation.setup.sections
         .flatMap((section) =>
           section.questions.map((question) => {
-            const answerInput = document.getElementsByName(
+            const answerInputs = document.getElementsByName(
               `question_${question.id}`
-            )[0] as HTMLInputElement | HTMLTextAreaElement | null;
+            ) as NodeListOf<HTMLInputElement>;
 
-            if (answerInput) {
-              const answerText =
-                answerInput.type === "checkbox"
-                  ? (answerInput as HTMLInputElement).checked
-                    ? "true"
-                    : "false"
-                  : answerInput.value;
+            let answerText = "";
+            let totalScore = 0;
 
-              const answerId = question.answer?.id;
-
-              if (answerId !== undefined && answerId !== null) {
-                return {
-                  id: answerId,
-                  answer: answerText,
-                  score: question.answer?.score || 0,
-                };
+            if (question.type === "radio") {
+              const selectedOption = Array.from(answerInputs).find(
+                (input) => input.checked
+              );
+              if (selectedOption) {
+                answerText = selectedOption.value;
+                totalScore = Number(selectedOption.dataset.score) || 0;
               }
+            } else if (question.type === "checkbox") {
+              const selectedOptions = Array.from(answerInputs)
+                .filter((input) => input.checked)
+                .map((input) => {
+                  totalScore += Number(input.dataset.score) || 0;
+                  return input.value;
+                });
+              answerText = selectedOptions.join(", ");
+            } else {
+              answerText = (answerInputs[0] as HTMLInputElement).value;
+              totalScore = question.answer?.score || 0;
+            }
+
+            const answerId = question.answer?.id;
+
+            if (answerId !== undefined && answerId !== null) {
+              return {
+                id: answerId,
+                answer: answerText,
+                score: totalScore,
+              };
             }
             return null;
           })
@@ -166,7 +204,7 @@ export default function EvaluationDetailsPage({
         );
 
       await updateAnswer(answers);
-
+      Swal.close();
       Swal.fire({
         title: "Success!",
         text: "All answers submitted successfully!",
