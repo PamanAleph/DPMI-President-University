@@ -38,7 +38,6 @@ app.use("/api/v1/roles", routerRole);
 app.use("/api/v1/download", routerDownload);
 app.use("/api/v1/options", routerOptions);
 
-
 const port = process.env.PORT | 4000;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

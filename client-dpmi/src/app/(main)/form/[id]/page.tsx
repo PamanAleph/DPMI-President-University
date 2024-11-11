@@ -35,6 +35,9 @@ export default function EvaluationDetailsPage({
 }: EvaluationDetailsPageProps) {
   const [evaluation, setEvaluation] = useState<EvaluationDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [uploadedFiles, setUploadedFiles] = useState<{ [key: number]: File[] }>(
+    {}
+  );
   const router = useRouter();
 
   useEffect(() => {
@@ -65,6 +68,42 @@ export default function EvaluationDetailsPage({
   if (loading) {
     return <SkeletonLoader />;
   }
+
+  const handleFileUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    questionId: number
+  ) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    const allowedTypes = [
+      "application/pdf",
+      "application/x-zip-compressed",
+      "application/vnd.rar",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      Swal.fire({
+        title: "Invalid File Type",
+        text: "Only PDF, ZIP, and RAR files are allowed.",
+        icon: "error",
+      });
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024; // 5 MB
+    if (file.size > maxSize) {
+      Swal.fire({
+        title: "File Too Large",
+        text: "The file size should not exceed 5 MB.",
+        icon: "error",
+      });
+      return;
+    }
+
+    // Set the uploaded file
+    setUploadedFiles((prev) => ({ ...prev, [questionId]: [file] }));
+  };
 
   const renderInputField = (question: Questions) => {
     const answerValue = question.answer?.answer || "";
@@ -136,6 +175,25 @@ export default function EvaluationDetailsPage({
             ))}
           </div>
         );
+      case "file":
+        return (
+          <div className="space-y-2">
+            <input
+              type="text"
+              name={`question_${question.id}`}
+              className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-all shadow-sm"
+              placeholder={question.question}
+              defaultValue={answerValue}
+            />
+            <input
+              type="file"
+              name={`question_${question.id}`}
+              className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-all shadow-sm"
+              multiple
+              onChange={(e) => handleFileUpload(e, question.id)}
+            />
+          </div>
+        );
       default:
         return null;
     }
@@ -148,69 +206,75 @@ export default function EvaluationDetailsPage({
     try {
       Swal.fire({
         title: "Submitting...",
-        text: "Please wait while the evaluation is being submited.",
+        text: "Please wait while the evaluation is being submitted.",
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
         },
       });
 
-      const answers = evaluation.setup.sections
-        .flatMap((section) =>
-          section.questions.map((question) => {
-            const answerInputs = document.getElementsByName(
-              `question_${question.id}`
-            ) as NodeListOf<HTMLInputElement>;
+      const answersWithoutFiles: Array<{
+        id: number;
+        answer: string;
+        score: number;
+      }> = [];
+      const fileAnswers: Array<{ id: number; files: File[] }> = [];
 
-            let answerText = "";
-            let totalScore = 0;
+      evaluation.setup.sections.forEach((section) => {
+        section.questions.forEach((question) => {
+          const answerInputs = document.getElementsByName(
+            `question_${question.id}`
+          ) as NodeListOf<HTMLInputElement>;
 
-            if (question.type === "radio") {
-              const selectedOption = Array.from(answerInputs).find(
-                (input) => input.checked
-              );
-              if (selectedOption) {
-                answerText = selectedOption.value;
-                totalScore = Number(selectedOption.dataset.score) || 0;
-              }
-            } else if (question.type === "checkbox") {
-              const selectedOptions = Array.from(answerInputs)
-                .filter((input) => input.checked)
-                .map((input) => {
-                  totalScore += Number(input.dataset.score) || 0;
-                  return input.value;
-                });
-              answerText = selectedOptions.join(", ");
-            } else {
-              answerText = (answerInputs[0] as HTMLInputElement).value;
-              totalScore = question.answer?.score || 0;
-            }
+          let answerText = "";
+          let totalScore = 0;
 
-            const answerId = question.answer?.id;
+          // Ensure `question.answer` is defined before accessing properties
+          const questionAnswer = question.answer;
+          if (question.type === "file" && uploadedFiles[question.id]) {
+            const additionalTextInput =
+              (
+                document.querySelector(
+                  `input[name="question_${question.id}_text"]`
+                ) as HTMLInputElement
+              )?.value || "";
 
-            if (answerId !== undefined && answerId !== null) {
-              return {
-                id: answerId,
-                answer: answerText,
-                score: totalScore,
-              };
-            }
-            return null;
-          })
-        )
-        .filter(
-          (answer): answer is { id: number; answer: string; score: number } =>
-            answer !== null
-        );
+            fileAnswers.push({
+              id: questionAnswer?.id || 0,
+              files: uploadedFiles[question.id],
+            });
 
-      await updateAnswer(answers);
+            answersWithoutFiles.push({
+              id: questionAnswer?.id || 0,
+              answer: additionalTextInput,
+              score: totalScore,
+            });
+
+            return;
+          } else {
+            answerText = (answerInputs[0] as HTMLInputElement).value;
+            totalScore = questionAnswer?.score ?? 0;
+          }
+
+          // Ensure `id` is defined before pushing into `answersWithoutFiles`
+          if (questionAnswer?.id) {
+            answersWithoutFiles.push({
+              id: questionAnswer.id,
+              answer: answerText,
+              score: totalScore,
+            });
+          }
+        });
+      });
+
+      await updateAnswer(answersWithoutFiles, fileAnswers);
+
       Swal.close();
       Swal.fire({
         title: "Success!",
         text: "All answers submitted successfully!",
         icon: "success",
         confirmButtonText: "OK",
-        timerProgressBar: true,
       }).then(() => {
         router.push("/");
       });

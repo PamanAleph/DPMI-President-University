@@ -191,9 +191,10 @@ export default function QuestionDetails() {
             <option value="text">Text</option>
             <option value="number">Number</option>
             <option value="email">Email</option>
+            <option value="textarea">Text Area</option>
+            <option value="file">File</option>
             <option value="radio">Radio</option>
             <option value="checkbox">Checkbox</option>
-            <option value="textarea">Text Area</option>
           </select>
           <p className="border border-gray-300 rounded-md p-2">
             Sequence: {question.sequence}

@@ -41,7 +41,7 @@ const findById = async (id) => {
         s.*, 
         sec.id AS section_id, sec.name AS section_name, sec.sequence AS section_sequence,
         q.id AS question_id, q.question, q.type, q.parent_id, q.sequence AS question_sequence,
-        a.id AS answer_id, a.answer, a.score,
+        a.id AS answer_id, a.answer, a.score, a.file_path, a.file_name,
         o.id AS option_id, o.option AS option_text, o.score AS option_score, o.sequence AS option_sequence
       FROM 
         evaluations e
@@ -106,8 +106,11 @@ const findById = async (id) => {
                   id: row.answer_id,
                   answer: row.answer,
                   score: row.score,
+                  file: row.file_path
+                    ? { path: row.file_path, name: row.file_name }
+                    : null
                 }
-              : { id: null, answer: null, score: null },
+              : { id: null, answer: null, score: null, file: null },
             options: [],
           };
           sectionsMap[row.section_id].questions.push(question);
@@ -147,6 +150,7 @@ const findById = async (id) => {
     throw new Error(`Could not fetch evaluation with ID ${id}: ${err.message}`);
   }
 };
+
 
 const createData = async (data) => {
   try {
