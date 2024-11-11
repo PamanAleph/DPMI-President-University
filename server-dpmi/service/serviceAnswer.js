@@ -12,8 +12,10 @@ const findAll = async () => {
 
 const findById = async (id) => {
   try {
-    const result = await client.query("SELECT * FROM answers WHERE id = $1", [id]);
-    
+    const result = await client.query("SELECT * FROM answers WHERE id = $1", [
+      id,
+    ]);
+
     if (result.rows.length === 0) {
       throw new Error("Answer not found");
     }
@@ -25,7 +27,12 @@ const findById = async (id) => {
   }
 };
 
-const insertAnswer = async (evaluationId, questionId, answer = null, score = null) => {
+const insertAnswer = async (
+  evaluationId,
+  questionId,
+  answer = null,
+  score = null
+) => {
   try {
     const query = `
       INSERT INTO answers (evaluation_id, question_id, answer, score)
@@ -41,21 +48,48 @@ const insertAnswer = async (evaluationId, questionId, answer = null, score = nul
   }
 };
 
-const updateAnswer = async (answers) => {
+const updateAnswer = async (answers, fileAnswers) => {
   try {
+    const queries = [];
+    const values = [];
+
+    const itemsToUpdate = answers.length > 0 ? answers : fileAnswers;
+
+    for (const item of itemsToUpdate) {
+      const id = item.id;
+      const answerText = item.answer || null;
+      const score = item.score !== undefined ? parseInt(item.score, 10) : null;
+
+      const file = fileAnswers.find((fa) => fa.id === id)?.file;
+      const filePath = file ? `/uploads/${file.filename}` : null;
+      const fileName = file ? file.originalname : null;
+
+      values.push(id, answerText, score, filePath, fileName);
+      queries.push(
+        `($${values.length - 4}::INTEGER, $${values.length - 3}::TEXT, $${
+          values.length - 2
+        }::INTEGER, $${values.length - 1}::TEXT, $${values.length}::TEXT)`
+      );
+    }
+
     const query = `
       UPDATE answers
-      SET answer = data.answer, score = data.score
-      FROM (VALUES ${answers.map((_, i) => `($${i * 3 + 1}::INTEGER, $${i * 3 + 2}, $${i * 3 + 3}::INTEGER)`).join(", ")}) AS data(id, answer, score)
+      SET 
+          answer = COALESCE(data.answer, answers.answer), 
+          score = COALESCE(data.score::INTEGER, answers.score), 
+          file_path = COALESCE(data.file_path, answers.file_path), 
+          file_name = COALESCE(data.file_name, answers.file_name)
+      FROM (VALUES ${queries.join(
+        ", "
+      )}) AS data(id, answer, score, file_path, file_name)
       WHERE answers.id = data.id
       RETURNING *;
     `;
 
-    const values = answers.flatMap(({ id, answer, score }) => [id, answer, score]);
     const result = await client.query(query, values);
 
     if (result.rows.length === 0) {
-      throw new Error("No answers were updated");
+      console.warn("No answers were updated.");
     }
 
     return result.rows;
@@ -88,7 +122,6 @@ const updateScore = async (questionId, score, evaluationId) => {
   }
 };
 
-// Delete an answer
 const deleteAnswer = async (id) => {
   try {
     const query = `

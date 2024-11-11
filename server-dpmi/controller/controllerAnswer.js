@@ -112,18 +112,23 @@ const createAnswer = async (req, res) => {
 
 const updateAnswerData = async (req, res) => {
   try {
-    const { answers } = req.body;
+    // Parse answer data from the request
+    const answers = JSON.parse(req.body.answers || "[]").map((answer) => ({
+      id: parseInt(answer.id, 10),
+      answer: answer.answer,
+      score: parseInt(answer.score, 10),
+    }));
 
-    if (!Array.isArray(answers) || answers.length === 0) {
-      return res.status(400).json({
-        response: {
-          status: "error",
-          message: "Answers array is required",
-        },
-        data: null,
-      });
-    }
-    const updatedAnswers = await updateAnswer(answers);
+    // Map the uploaded files to fileAnswers with a single file for each answer
+    const fileAnswers = JSON.parse(req.body.fileAnswers || "[]").map((fileAnswer) => ({
+      id: parseInt(fileAnswer.id, 10),
+      file: req.files.find(
+        (file) => file.fieldname === `fileAnswers_${fileAnswer.id}_files_0`
+      ), // Expecting a single file per answer
+    }));
+
+    // Update answers and files in the database
+    const updatedAnswers = await updateAnswer(answers, fileAnswers);
 
     res.json({
       response: {
@@ -145,7 +150,7 @@ const updateAnswerData = async (req, res) => {
   }
 };
 
-// Delete an answer
+
 const deleteAnswerData = async (req, res) => {
   try {
     const { id } = req.params;

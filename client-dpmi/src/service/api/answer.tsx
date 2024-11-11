@@ -25,16 +25,33 @@ export async function createAnswer(answerData: Answer): Promise<Answer> {
 }
 
 export async function updateAnswer(
-  answers: Array<{ id: number; answer: string; score: number }>
+  answers: Array<{ id: number; answer: string; score: number }>,
+  fileAnswers: Array<{ id: number; files: File[] }>
 ): Promise<void> {
+  const formData = new FormData();
+
+  formData.append("answers", JSON.stringify(answers));
+  formData.append("fileAnswers", JSON.stringify(fileAnswers.map(fa => ({ id: fa.id }))));
+
+  fileAnswers.forEach((fileAnswer) => {
+    const file = fileAnswer.files[0]; 
+    if (file) {
+      formData.append(`fileAnswers_${fileAnswer.id}_files_0`, file);
+    }
+  });
+
   try {
-    const response = await axios.put(`${API_ANSWER}/batch-update`, { answers });
-    return response.data;
+    await axios.put(`${API_ANSWER}/batch-update`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
   } catch (error) {
-    console.error("Error updating answers:", error);
+    console.error("Error updating answers with files:", error);
     throw error;
   }
 }
+
 
 interface UpdateAnswerScoreParams {
   evaluationId: number;
