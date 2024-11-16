@@ -1,5 +1,3 @@
-// src/controllers/optionsController.js
-
 const { createMultipleOptions } = require("../service/serviceOptions");
 
 const createOptions = async (req, res) => {

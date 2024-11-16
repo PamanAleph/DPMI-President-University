@@ -34,7 +34,7 @@ export default function Navbar() {
 
           {/* Login Button for Desktop */}
           <div className="hidden md:flex items-center">
-            <Link href="/login">
+            <Link href="auth/login">
               <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
                 Login
               </button>

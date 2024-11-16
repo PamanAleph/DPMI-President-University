@@ -1,23 +1,45 @@
 import { API_AUTH } from "@/config/config";
 import Users from "@/models/users";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
-export async function Login(username: string, password: string) {
+interface LoginResponseData {
+  accessToken: string;
+  username: string;
+  major_id: number;
+  is_admin: boolean;
+}
+
+export async function UserLogin(
+  email: string,
+  password: string
+): Promise<LoginResponseData> {
   try {
-    const response = await axios.post(`${API_AUTH}/login`, {
-      username,
-      password,
-    });
+    const response: AxiosResponse<{
+      response: {
+        status: string;
+        message: string;
+      };
+      data: LoginResponseData;
+    }> = await axios.post(`${API_AUTH}/login`, { email, password });
+
+    if (response?.data?.response?.status !== "success") {
+      throw new Error(response?.data?.response?.message || "Login failed");
+    }
 
     return response.data.data;
   } catch (error) {
-    console.log(error);
-    throw error;
+    if (axios.isAxiosError(error) && error.response) {
+      console.error("API error:", error.response.data);
+      throw new Error(error.response.data.response?.message || "Login failed");
+    } else {
+      console.error("Unexpected error:", error);
+      throw new Error("Unexpected error occurred");
+    }
   }
 }
 
 
-export async function Register(user: Users) {
+export async function AdminRegister(user: Users) {
   try {
     const response = await axios.post(`${API_AUTH}/register`, user);
 
