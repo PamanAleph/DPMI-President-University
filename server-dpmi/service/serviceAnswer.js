@@ -48,7 +48,7 @@ const insertAnswer = async (
   }
 };
 
-const updateAnswer = async (answers, fileAnswers) => {
+const updateAnswer = async (answers, fileAnswers, userId) => {
   try {
     const queries = [];
     const values = [];
@@ -64,11 +64,11 @@ const updateAnswer = async (answers, fileAnswers) => {
       const filePath = file ? `/uploads/${file.filename}` : null;
       const fileName = file ? file.originalname : null;
 
-      values.push(id, answerText, score, filePath, fileName);
+      values.push(id, answerText, score, filePath, fileName, userId);
       queries.push(
-        `($${values.length - 4}::INTEGER, $${values.length - 3}::TEXT, $${
-          values.length - 2
-        }::INTEGER, $${values.length - 1}::TEXT, $${values.length}::TEXT)`
+        `($${values.length - 5}::INTEGER, $${values.length - 4}::TEXT, $${
+          values.length - 3
+        }::INTEGER, $${values.length - 2}::TEXT, $${values.length - 1}::TEXT, $${values.length}::INTEGER)`
       );
     }
 
@@ -78,10 +78,11 @@ const updateAnswer = async (answers, fileAnswers) => {
           answer = COALESCE(data.answer, answers.answer), 
           score = COALESCE(data.score::INTEGER, answers.score), 
           file_path = COALESCE(data.file_path, answers.file_path), 
-          file_name = COALESCE(data.file_name, answers.file_name)
+          file_name = COALESCE(data.file_name, answers.file_name),
+          user_id = COALESCE(data.user_id, answers.user_id)
       FROM (VALUES ${queries.join(
         ", "
-      )}) AS data(id, answer, score, file_path, file_name)
+      )}) AS data(id, answer, score, file_path, file_name, user_id)
       WHERE answers.id = data.id
       RETURNING *;
     `;
@@ -98,6 +99,7 @@ const updateAnswer = async (answers, fileAnswers) => {
     throw new Error("Failed to update answers");
   }
 };
+
 
 const updateScore = async (questionId, score, evaluationId) => {
   try {

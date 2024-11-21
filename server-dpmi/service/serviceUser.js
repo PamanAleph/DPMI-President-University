@@ -1,15 +1,37 @@
 const { client } = require("../common/common");
 
+// Get All Users with Major Name
 const getAllUsers = async () => {
-  const query = `SELECT id, email, username, major_id, is_admin FROM users`;
-  const result = await pool.query(query);
+  const query = `
+    SELECT 
+      users.id, 
+      users.email, 
+      users.username, 
+      users.major_id, 
+      users.is_admin,
+      major.name AS major_name
+    FROM users
+    LEFT JOIN major ON users.major_id = major.id;
+  `;
+  const result = await client.query(query);
   return result.rows;
 };
 
-// Get User By ID
+// Get User By ID with Major Name
 const getUserById = async (id) => {
-  const query = `SELECT id, email, username, major_id, is_admin FROM users WHERE id = $1`;
-  const result = await pool.query(query, [id]);
+  const query = `
+    SELECT 
+      users.id, 
+      users.email, 
+      users.username, 
+      users.major_id, 
+      users.is_admin,
+      major.name AS major_name
+    FROM users
+    LEFT JOIN major ON users.major_id = major.id
+    WHERE users.id = $1;
+  `;
+  const result = await client.query(query, [id]);
 
   if (result.rows.length === 0) {
     throw new Error("User not found");
@@ -30,19 +52,24 @@ const updateUser = async (id, { email, username, major_id, is_admin }) => {
     RETURNING id, email, username, major_id, is_admin;
   `;
   const values = [email, username, major_id, is_admin, id];
-  const result = await pool.query(query, values);
+  const result = await client.query(query, values);
 
   if (result.rows.length === 0) {
     throw new Error("User not found");
   }
 
-  return result.rows[0];
+  // Fetch the updated user with major_name
+  return getUserById(id);
 };
 
 // Delete User
 const deleteUser = async (id) => {
-  const query = `DELETE FROM users WHERE id = $1 RETURNING id, email`;
-  const result = await pool.query(query, [id]);
+  const query = `
+    DELETE FROM users 
+    WHERE id = $1 
+    RETURNING id, email;
+  `;
+  const result = await client.query(query, [id]);
 
   if (result.rows.length === 0) {
     throw new Error("User not found");
