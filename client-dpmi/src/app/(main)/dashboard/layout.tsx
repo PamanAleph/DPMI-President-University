@@ -1,30 +1,45 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DashobardContextProvider } from "./_components/DashboardContext";
 import DashboardSidebar from "./_components/DashboardSidebar";
 import DashboardContent from "./_components/DashboardContent";
 import ToggleButton from "./_components/ToggleButton";
 
-export default async function AdminLayout({
-    children,
+export default function UserLayout({
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    // if (session?.user.role_id === 2 || session?.user.role_id === 8) {
-    //     return redirect("/");
-    // }
+  const router = useRouter();
 
-    return (
-        <DashobardContextProvider>
-            <div className="flex h-screen">
-                {/* Sidebar */}
-               <DashboardSidebar />
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem("user");
+    if (!storedUser) {
+      // Redirect to home if user data is not found
+      router.push("/");
+    } else {
+      const user = JSON.parse(storedUser);
+      if (!user.accessToken) {
+        // Redirect to home if accessToken is missing
+        router.push("/");
+      }
+    }
+  }, [router]);
 
-                {/* Main content */}
+  return (
+    <DashobardContextProvider>
+      <div className="flex h-screen">
+        {/* Sidebar */}
+        <DashboardSidebar />
 
-                <DashboardContent>{children}</DashboardContent>
+        {/* Main content */}
+        <DashboardContent>{children}</DashboardContent>
 
-                {/* Toggle button */}
-                <ToggleButton />
-            </div>
-        </DashobardContextProvider>
-    );
+        {/* Toggle button */}
+        <ToggleButton />
+      </div>
+    </DashobardContextProvider>
+  );
 }
