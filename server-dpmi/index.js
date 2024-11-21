@@ -21,6 +21,7 @@ const routerUsers = require("./routes/userRoutes")
 const routerRole = require('./routes/roleRoute')
 const routerDownload = require("./routes/downloadRoute");
 const routerOptions = require("./routes/optionsRoute");
+const routerCount = require("./routes/countRoute");
 
 const errorHandler = require("./middleware/errorHandler");
 
@@ -37,6 +38,7 @@ app.use("/api/v1/users", routerUsers);
 app.use("/api/v1/roles", routerRole);
 app.use("/api/v1/download", routerDownload);
 app.use("/api/v1/options", routerOptions);
+app.use("/api/v1/count", routerCount);
 
 const port = process.env.PORT | 4000;
 app.listen(port, () => {

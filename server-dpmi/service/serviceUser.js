@@ -1,82 +1,59 @@
 const { client } = require("../common/common");
 
-const findAll = async () => {
-  try {
-    const usersQuery = `
-      SELECT u.id, u.email, u.username, u.role_id, 
-             m.major_name, 
-             r.role_name
-      FROM users u
-      LEFT JOIN roles r ON u.role_id = r.id
-    `;
-    
-    const { rows: usersData } = await client.query(usersQuery);
-
-    return usersData;
-  } catch (error) {
-    console.error("Internal server error:", error);
-    throw error;
-  }
+const getAllUsers = async () => {
+  const query = `SELECT id, email, username, major_id, is_admin FROM users`;
+  const result = await pool.query(query);
+  return result.rows;
 };
 
+// Get User By ID
+const getUserById = async (id) => {
+  const query = `SELECT id, email, username, major_id, is_admin FROM users WHERE id = $1`;
+  const result = await pool.query(query, [id]);
 
-const findById = async (id) => {
-  try {
-    const userQuery = `
-      SELECT u.id, u.email, u.username, u.major_id, u.role_id, u.create_at,
-             m.major_name, r.role_name
-      FROM users u
-      LEFT JOIN major m ON u.major_id = m.id
-      LEFT JOIN roles r ON u.role_id = r.id
-      WHERE u.id = $1
-    `;
-
-    const { rows: userData } = await client.query(userQuery, [id]);
-
-    if (userData.length === 0) {
-      throw new Error("User not found");
-    }
-
-    return userData[0]; 
-  } catch (error) {
-    console.error("Internal server error:", error);
-    throw error;
+  if (result.rows.length === 0) {
+    throw new Error("User not found");
   }
+
+  return result.rows[0];
 };
 
+// Update User
+const updateUser = async (id, { email, username, major_id, is_admin }) => {
+  const query = `
+    UPDATE users 
+    SET email = COALESCE($1, email), 
+        username = COALESCE($2, username), 
+        major_id = COALESCE($3, major_id), 
+        is_admin = COALESCE($4, is_admin)
+    WHERE id = $5
+    RETURNING id, email, username, major_id, is_admin;
+  `;
+  const values = [email, username, major_id, is_admin, id];
+  const result = await pool.query(query, values);
 
-const updateUser = async (id, updates) => {
-  try {
-    const updateFields = Object.keys(updates)
-      .map((key, index) => `${key} = $${index + 1}`)
-      .join(", ");
-    const values = Object.values(updates);
-
-    const updateQuery = `UPDATE users SET ${updateFields} WHERE id = $${values.length + 1} RETURNING *`;
-    const { rows: updatedUserData } = await client.query(updateQuery, [...values, id]);
-
-    return updatedUserData[0];
-  } catch (error) {
-    console.error("Internal server error:", error);
-    throw error;
+  if (result.rows.length === 0) {
+    throw new Error("User not found");
   }
+
+  return result.rows[0];
 };
 
+// Delete User
 const deleteUser = async (id) => {
-  try {
-    const deleteQuery = `DELETE FROM users WHERE id = $1`;
-    await client.query(deleteQuery, [id]);
+  const query = `DELETE FROM users WHERE id = $1 RETURNING id, email`;
+  const result = await pool.query(query, [id]);
 
-    return `User with id ${id} deleted successfully`;
-  } catch (error) {
-    console.error("Internal server error:", error);
-    throw error;
+  if (result.rows.length === 0) {
+    throw new Error("User not found");
   }
+
+  return result.rows[0];
 };
 
 module.exports = {
-  findAll,
-  findById,
+  getAllUsers,
+  getUserById,
   updateUser,
   deleteUser,
 };

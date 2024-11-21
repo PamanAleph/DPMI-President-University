@@ -1,119 +1,56 @@
 const {
-  findAll,
-  findById,
+  getAllUsers,
+  getUserById,
   updateUser,
   deleteUser,
 } = require("../service/serviceUser");
 
-const getAllData = async (req, res) => {
+const fetchAllUsers = async (req, res) => {
   try {
-    const data = await findAll();
-
-    res.json({
-      response: {
-        status: "success",
-        message: "Data fetched successfully",
-      },
-      data: data,
-    });
+    const users = await getAllUsers();
+    res.status(200).json({ message: "Users fetched successfully", users });
   } catch (err) {
-    console.error("Internal server error:", err);
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
+    res.status(500).json({ message: err.message });
   }
 };
 
-const getDataById = async (req, res) => {
+const fetchUserById = async (req, res) => {
   const { id } = req.params;
+
   try {
-    const data = await findById(id);
-    if (!data) {
-      return res.status(404).json({
-        response: {
-          status: "error",
-          message: "Data not found",
-        },
-        data: null,
-      });
-    }
-    res.json({
-      response: {
-        status: "success",
-        message: "Data fetched successfully",
-      },
-      data: data,
-    });
+    const user = await getUserById(id);
+    res.status(200).json({ message: "User fetched successfully", user });
   } catch (err) {
-    console.error("Internal server error:", err);
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
+    res.status(404).json({ message: err.message });
   }
 };
 
-const updateData = async (req, res) => {
+const modifyUser = async (req, res) => {
   const { id } = req.params;
-  const updates = req.body;
+  const { email, username, major_id, is_admin } = req.body;
+
   try {
-    const data = await updateUser(id, updates);
-    res.json({
-      response: {
-        status: "success",
-        message: "Data updated successfully",
-      },
-      data: data,
-    });
+    const updatedUser = await updateUser(id, { email, username, major_id, is_admin });
+    res.status(200).json({ message: "User updated successfully", updatedUser });
   } catch (err) {
-    console.error("Internal server error:", err);
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
+    res.status(404).json({ message: err.message });
   }
 };
 
-const deleteData = async (req, res) => {
+const removeUser = async (req, res) => {
   const { id } = req.params;
+
   try {
-    const data = await deleteUser(id);
-    res.json({
-      response: {
-        status: "success",
-        message: "Data deleted successfully",
-      },
-      data: data,
-    });
+    const deletedUser = await deleteUser(id);
+    res.status(200).json({ message: "User deleted successfully", deletedUser });
   } catch (err) {
-    console.error("Internal server error:", err);
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
+    res.status(404).json({ message: err.message });
   }
 };
 
 module.exports = {
-  getAllData,
-  getDataById,
-  updateData,
-  deleteData,
+  fetchAllUsers,
+  fetchUserById,
+  modifyUser,
+  removeUser,
 };

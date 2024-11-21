@@ -1,17 +1,34 @@
+"use client"
 import Sidebar from "@/components/admin/Sidebar";
 import Image from "next/image";
 import PULOGO from "@/assets/pu_logo.jpg";
 import { AdminDashboardContextProvider } from "@/context/AdminDashboardContext"
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default async function AdminLayout({
+export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    // if (session?.user.role_id === 2 || session?.user.role_id === 8) {
-    //     return redirect("/");
-    // }
+    const router = useRouter();
 
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem("user");
+    if (!storedUser) {
+      router.push("/auth/login");
+      return;
+    }
+
+    const user = JSON.parse(storedUser);
+
+    if (!user.is_admin) {
+      router.push("/"); 
+    }
+
+
+  }, [router]);
+ 
     return (
         <AdminDashboardContextProvider>
             <div className="bg-[#FBFBFB] scroll-smooth text-black">

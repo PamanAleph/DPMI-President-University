@@ -1,4 +1,4 @@
-// import Navbar from "@/components/Navbar";
+import Navbar from "@/components/Navbar";
 
 export default async function Layout({
   children,
@@ -7,7 +7,7 @@ export default async function Layout({
 }) {
   return (
     <div className="bg-[#FBFBFB] scroll-smooth text-black">
-      {/* <Navbar /> */}
+      <Navbar />
       {children}
     </div>
   );

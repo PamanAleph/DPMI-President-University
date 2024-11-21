@@ -10,5 +10,7 @@ export const API_AUTH = BASE_URL + "/auth"
 export const API_ANSWER = BASE_URL + "/answers"
 export const API_DOWNLOAD = BASE_URL + "/download"
 export const API_OPTION = BASE_URL + "/options"
+export const API_COUNT = BASE_URL + "/count"
+
 
 export const USER_SECRECTKEY = process.env.USER_SECRETKEY || "default-secret-key";

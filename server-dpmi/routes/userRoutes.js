@@ -1,14 +1,14 @@
 const router = require("express").Router();
 const {
-  getAllData,
-  getDataById,
-  updateData,
-  deleteData
+  fetchAllUsers,
+  fetchUserById,
+  modifyUser,
+  removeUser,
 } = require("../controller/controllerUser");
 
-router.get("/", getAllData);
-router.get("/id/:id", getDataById);
-router.put("/:id", updateData);
-router.delete("/:id", deleteData);
+router.get("/", fetchAllUsers);
+router.get("/id/:id", fetchUserById);
+router.put("/:id", modifyUser);
+router.delete("/:id", removeUser);
 
 module.exports = router;
