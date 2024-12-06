@@ -10,7 +10,6 @@ export function getAccessToken(): string | null {
         console.warn("No user data found in sessionStorage.");
         return null;
       }
-  
       const parsedData = JSON.parse(userData);
       return parsedData.accessToken || null;
     } catch (error) {
