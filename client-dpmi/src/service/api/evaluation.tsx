@@ -3,11 +3,13 @@ import Evaluation from "@/models/evaluation";
 import EvaluationDetails from "@/models/evaluationDetails";
 import axios from "axios";
 
-export const fetchEvaluations = async () => {
+export const fetchEvaluations = async (accessToken: string) => {
   try {
-    const response = await axios.get<{ data: Evaluation[] }>(
-      `${API_EVALUATION}`
-    );
+    const response = await axios.get<{ data: Evaluation[] }>(`${API_EVALUATION}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
     return response.data.data;
   } catch (error) {
     console.error("Error fetching evaluations:", error);
@@ -16,14 +18,18 @@ export const fetchEvaluations = async () => {
 };
 
 export const createEvaluation = async (
-  evaluationData: Omit<Evaluation, "major_name" | "setup_name">
+  evaluationData: Omit<Evaluation, "major_name" | "setup_name">,
+  accessToken: string
 ): Promise<Evaluation[]> => {
   try {
     const response = await axios.post<{ data: Evaluation[] }>(
       `${API_EVALUATION}`,
       evaluationData,
       {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     );
     return response.data.data;
@@ -34,14 +40,18 @@ export const createEvaluation = async (
 };
 
 export const updateEvaluation = async (
-  evaluationData: Omit<Evaluation, "major_names" | "setup_name">
+  evaluationData: Omit<Evaluation, "major_names" | "setup_name">,
+  accessToken: string
 ) => {
   try {
     const response = await axios.put<{ data: Evaluation[] }>(
       `${API_EVALUATION}/${evaluationData.id}`,
       evaluationData,
       {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     );
     return response.data.data;
@@ -52,11 +62,17 @@ export const updateEvaluation = async (
 };
 
 export const deleteEvaluation = async (
-  evaluationId: number
+  evaluationId: number,
+  accessToken: string
 ): Promise<Evaluation[]> => {
   try {
     const response = await axios.delete<{ data: Evaluation[] }>(
-      `${API_EVALUATION}/${evaluationId}`
+      `${API_EVALUATION}/${evaluationId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
     );
     return response.data.data;
   } catch (error) {
@@ -65,36 +81,47 @@ export const deleteEvaluation = async (
   }
 };
 
-export const checkEvaluation = async ({
-  setupId,
-  majorIds,
-  semester,
-  endDate,
-}: {
-  setupId: number;
-  majorIds: number[];
-  semester: string;
-  endDate: Date;
-}): Promise<boolean> => {
+export const checkEvaluation = async (
+  {
+    setupId,
+    majorIds,
+    semester,
+    endDate,
+  }: {
+    setupId: number;
+    majorIds: number[];
+    semester: string;
+    endDate: Date;
+  },
+  accessToken: string
+): Promise<boolean> => {
   try {
     const response = await axios.post<{ data: boolean }>(
       `${API_EVALUATION}/check`,
       { setupId, majorIds, semester, endDate },
       {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     );
-    return response.data.data; 
+    return response.data.data;
   } catch (error) {
     console.error("Error checking evaluation:", error);
     throw error;
   }
 };
 
-export const fetchEvaluationById = async (evaluationId: number) => {
+export const fetchEvaluationById = async (evaluationId: number, accessToken: string) => {
   try {
     const response = await axios.get<{ data: EvaluationDetails }>(
-      `${API_EVALUATION}/id/${evaluationId}`
+      `${API_EVALUATION}/id/${evaluationId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
     );
     return response.data.data;
   } catch (error) {
@@ -103,10 +130,15 @@ export const fetchEvaluationById = async (evaluationId: number) => {
   }
 };
 
-export const fetchEvaluationByMajorId = async (major_id: number) => {
+export const fetchEvaluationByMajorId = async (major_id: number, accessToken: string) => {
   try {
     const response = await axios.get<{ data: Evaluation[] }>(
-      `${API_EVALUATION}/major/${major_id}`
+      `${API_EVALUATION}/major/${major_id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
     );
     return response.data.data;
   } catch (error) {

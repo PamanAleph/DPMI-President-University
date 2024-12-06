@@ -65,8 +65,8 @@ export async function updateAnswer(
     await axios.put(`${API_ANSWER}/batch-update`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${accessToken}`, // Include accessToken
-      },
+        Authorization: `Bearer ${accessToken}`, 
+      } ,
     });
   } catch (error) {
     console.error("Error updating answers with files:", error);
