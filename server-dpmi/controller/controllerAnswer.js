@@ -112,43 +112,23 @@ const createAnswer = async (req, res) => {
 
 const updateAnswerData = async (req, res) => {
   try {
-    // Parse accessToken from request headers or session
-    const accessToken = req.headers.authorization?.split(" ")[1];
-    if (!accessToken) {
-      return res.status(401).json({
-        response: {
-          status: "error",
-          message: "Unauthorized: Access token is missing",
-        },
-        data: null,
-      });
-    }
-
-    const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
-    const userId = decodedToken.userId; 
-
-    if (!userId) {
-      return res.status(401).json({
-        response: {
-          status: "error",
-          message: "Unauthorized: Invalid access token",
-        },
-        data: null,
-      });
-    }
+    // Parse answer data from the request
     const answers = JSON.parse(req.body.answers || "[]").map((answer) => ({
       id: parseInt(answer.id, 10),
       answer: answer.answer,
       score: parseInt(answer.score, 10),
     }));
+
+    // Map the uploaded files to fileAnswers with a single file for each answer
     const fileAnswers = JSON.parse(req.body.fileAnswers || "[]").map((fileAnswer) => ({
       id: parseInt(fileAnswer.id, 10),
       file: req.files.find(
         (file) => file.fieldname === `fileAnswers_${fileAnswer.id}_files_0`
-      ), 
+      ), // Expecting a single file per answer
     }));
 
-    const updatedAnswers = await updateAnswer(answers, fileAnswers, userId);
+    // Update answers and files in the database
+    const updatedAnswers = await updateAnswer(answers, fileAnswers);
 
     res.json({
       response: {

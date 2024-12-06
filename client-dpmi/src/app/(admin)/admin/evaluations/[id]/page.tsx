@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import React, { useState, useEffect, useCallback } from "react";
 import Swal from "sweetalert2";
 import SkeletonLoader from "@/components/admin/evaluations/SkeletonLoader";
-import { getAccessToken } from "@/utils/sessionStorage";
 
 interface EvaluationDetailsPageProps {
   params: { id: string };
@@ -19,8 +18,6 @@ export default function EvaluationDetailsPage({
   const [scores, setScores] = useState<{ questionId: number; score: number }[]>(
     []
   );
-
-  const accessToken = getAccessToken();
 
   const fetchData = useCallback(async () => {
     const evaluationData = await fetchEvaluationById(Number(params.id));
@@ -65,7 +62,7 @@ export default function EvaluationDetailsPage({
           Swal.showLoading();
         }
       });
-      await updateAnswerScore({ questionId, score, evaluationId }, accessToken as string);
+      await updateAnswerScore({ questionId, score, evaluationId });
       Swal.close();
       Swal.fire("Success", "Score saved successfully.", "success");
     } catch (error) {

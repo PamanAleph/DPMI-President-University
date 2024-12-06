@@ -8,22 +8,9 @@ const {
 const fetchAllUsers = async (req, res) => {
   try {
     const users = await getAllUsers();
-    res.status(200).json({
-      response: {
-        status: "success",
-        message: "Users fetched successfully",
-      },
-      data: users,
-    });
+    res.status(200).json({ message: "Users fetched successfully", users });
   } catch (err) {
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -32,31 +19,9 @@ const fetchUserById = async (req, res) => {
 
   try {
     const user = await getUserById(id);
-    if (!user) {
-      return res.status(404).json({
-        response: {
-          status: "error",
-          message: "User not found",
-        },
-        data: null,
-      });
-    }
-    res.status(200).json({
-      response: {
-        status: "success",
-        message: "User fetched successfully",
-      },
-      data: user,
-    });
+    res.status(200).json({ message: "User fetched successfully", user });
   } catch (err) {
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
+    res.status(404).json({ message: err.message });
   }
 };
 
@@ -66,31 +31,9 @@ const modifyUser = async (req, res) => {
 
   try {
     const updatedUser = await updateUser(id, { email, username, major_id, is_admin });
-    if (!updatedUser) {
-      return res.status(404).json({
-        response: {
-          status: "error",
-          message: "User not found",
-        },
-        data: null,
-      });
-    }
-    res.status(200).json({
-      response: {
-        status: "success",
-        message: "User updated successfully",
-      },
-      data: updatedUser,
-    });
+    res.status(200).json({ message: "User updated successfully", updatedUser });
   } catch (err) {
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
+    res.status(404).json({ message: err.message });
   }
 };
 
@@ -99,31 +42,9 @@ const removeUser = async (req, res) => {
 
   try {
     const deletedUser = await deleteUser(id);
-    if (!deletedUser) {
-      return res.status(404).json({
-        response: {
-          status: "error",
-          message: "User not found",
-        },
-        data: null,
-      });
-    }
-    res.status(200).json({
-      response: {
-        status: "success",
-        message: "User deleted successfully",
-      },
-      data: deletedUser,
-    });
+    res.status(200).json({ message: "User deleted successfully", deletedUser });
   } catch (err) {
-    res.status(500).json({
-      response: {
-        status: "error",
-        message: "Internal server error",
-        details: err.message,
-      },
-      data: null,
-    });
+    res.status(404).json({ message: err.message });
   }
 };
 

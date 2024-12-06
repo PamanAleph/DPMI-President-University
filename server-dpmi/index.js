@@ -24,7 +24,6 @@ const routerOptions = require("./routes/optionsRoute");
 const routerCount = require("./routes/countRoute");
 
 const errorHandler = require("./middleware/errorHandler");
-const verifyToken = require("./middleware/authMiddleware");
 
 app.use(errorHandler);
 
@@ -33,9 +32,9 @@ app.use("/api/v1/setup", routerSetup);
 app.use("/api/v1/sections", routerSections);
 app.use("/api/v1/questions", routerQuestions);
 app.use("/api/v1/evaluations", routerEvaluations);
-app.use("/api/v1/answers", verifyToken ,routerAnswer);
+app.use("/api/v1/answers", routerAnswer);
 app.use("/api/v1/auth", routerAuth);
-app.use("/api/v1/users",verifyToken, routerUsers);
+app.use("/api/v1/users", routerUsers);
 app.use("/api/v1/roles", routerRole);
 app.use("/api/v1/download", routerDownload);
 app.use("/api/v1/options", routerOptions);
