@@ -11,6 +11,7 @@ import Link from "next/link";
 import Select from "react-select";
 import { fetchQuestionBySetupId } from "@/service/api/questions";
 import { createAnswer } from "@/service/api/answer";
+import { getAccessToken } from "@/utils/sessionStorage";
 
 interface SetupActionsProps {
   setupId: number;
@@ -18,6 +19,8 @@ interface SetupActionsProps {
 }
 
 export default function SetupActions({ setupId, setup }: SetupActionsProps) {
+  const accessToken = getAccessToken();
+
   useEffect(() => {
     const getMajors = async () => {
       try {
@@ -241,12 +244,15 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
           const questions = await fetchQuestionBySetupId(setupId);
 
           for (const question of questions) {
-            await createAnswer({
-              evaluation_id: evaluationId,
-              question_id: question.id,
-              answer: null,
-              score: null,
-            });
+            await createAnswer(
+              {
+                evaluation_id: evaluationId,
+                question_id: question.id,
+                answer: null,
+                score: null,
+              },
+              accessToken as string
+            );
           }
         }
         Swal.close();
