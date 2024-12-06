@@ -15,44 +15,40 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setErrorMessage("");
-
+  
     try {
       const response = await UserLogin(email, password);
-
+  
       if (!response || !response.accessToken) {
         throw new Error("Invalid response from server");
       }
-
+  
       const { accessToken, username, major_id, is_admin } = response;
       sessionStorage.setItem(
         "user",
-        JSON.stringify({ accessToken, username, major_id, is_admin })
+        JSON.stringify(
+          { accessToken, username, major_id, is_admin }
+        )
       );
-
-      if (response.is_admin) {
-        router.push("/admin/dashboard");
-      } else {
-        router.push("/dashboard");
-      }
+  
+      console.log("Access token saved:", accessToken);
+  
+      router.push("/dashboard");
     } catch (error) {
       console.error("Error during login:", error);
     } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <section className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="mx-auto w-full max-w-lg rounded-md bg-white bg-opacity-40 p-6 shadow-md">
         <div>
           <div className="flex flex-col items-center justify-between md:flex-row">
             <div className="mb-4 text-[#353535] md:mb-0 md:mr-10">
-              <p className="text-base font-normal md:text-lg">
-                Hello, PresUniver Staff!
-              </p>
-              <p className="text-lg font-semibold md:text-2xl">
-                Let’s Sign In Folks
-              </p>
+              <p className="text-base font-normal md:text-lg">Hello, PresUniver Staff!</p>
+              <p className="text-lg font-semibold md:text-2xl">Let’s Sign In Folks</p>
             </div>
           </div>
           <div className="my-4">
