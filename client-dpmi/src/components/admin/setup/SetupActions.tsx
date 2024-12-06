@@ -217,7 +217,7 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
             semester: formValues.semester,
             endDate: new Date(formValues.end_date),
           };
-          const evaluationExists = await checkEvaluation(evaluationCheckData);
+          const evaluationExists = await checkEvaluation(evaluationCheckData,accessToken as string);
 
           if (evaluationExists) {
             Swal.fire(
@@ -235,7 +235,7 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
             end_date: new Date(formValues.end_date),
           };
 
-          const evaluations = await createEvaluation(evaluationData);
+          const evaluations = await createEvaluation(evaluationData, accessToken as string);
           const newEvaluation = Array.isArray(evaluations) ? evaluations[0] : evaluations;
           
           // Verifikasi `newEvaluation.id` sebagai number

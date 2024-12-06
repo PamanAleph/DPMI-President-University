@@ -10,6 +10,7 @@ import { updateAnswer } from "@/service/api/answer";
 import Swal from "sweetalert2";
 import FormExpired from "@/components/form/FormExpired";
 import { getAccessToken } from "@/utils/sessionStorage";
+import MajorNotMatch from "@/components/form/MajorNotMatch";
 
 const SkeletonLoader = () => {
   return (
@@ -41,6 +42,9 @@ export default function EvaluationDetailsPage({
   );
   const router = useRouter();
   const accessToken = getAccessToken();
+  const major_id = sessionStorage.getItem("user")
+    ? JSON.parse(sessionStorage.getItem("user") as string).major_id
+    : null;
 
   useEffect(() => {
     const encryptedId = params.id;
@@ -53,7 +57,8 @@ export default function EvaluationDetailsPage({
 
     const fetchEvaluation = async () => {
       const apiResponse: EvaluationDetails | null = await fetchEvaluationById(
-        decryptedId
+        decryptedId,
+        accessToken as string
       );
       if (!apiResponse) {
         console.error("No evaluation found for the provided ID.");
@@ -65,7 +70,7 @@ export default function EvaluationDetailsPage({
     };
 
     fetchEvaluation();
-  }, [params.id, router]);
+  }, [params.id, router, accessToken]);
 
   if (loading) {
     return <SkeletonLoader />;
@@ -269,7 +274,11 @@ export default function EvaluationDetailsPage({
         });
       });
 
-      await updateAnswer(answersWithoutFiles, fileAnswers , accessToken as string);
+      await updateAnswer(
+        answersWithoutFiles,
+        fileAnswers,
+        accessToken as string
+      );
 
       Swal.close();
       Swal.fire({
@@ -290,6 +299,10 @@ export default function EvaluationDetailsPage({
     }
   };
 
+  if (major_id !== evaluation?.major_id) {
+    return  <MajorNotMatch/>
+  }
+
   const isFormExpired = () => {
     if (!evaluation || !evaluation.end_date) return false;
     return new Date() > new Date(evaluation.end_date);
@@ -304,60 +317,62 @@ export default function EvaluationDetailsPage({
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-8 space-y-8 bg-gray-50 shadow-xl rounded-2xl">
-      <form onSubmit={handleSubmit} className="space-y-10">
-        <div className="bg-white shadow-xl rounded-xl p-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Evaluation ID: {evaluation.id}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <p>
-              <span className="font-semibold text-gray-600">Setup Name:</span>{" "}
-              {evaluation.setup.name}
-            </p>
-            <p>
-              <span className="font-semibold text-gray-600">Major Name:</span>{" "}
-              {evaluation.major_name}
-            </p>
-            <p>
-              <span className="font-semibold text-gray-600">Semester:</span>{" "}
-              {evaluation.semester}
-            </p>
-            <p>
-              <span className="font-semibold text-gray-600">End Date:</span>{" "}
-              {new Date(evaluation.end_date).toLocaleDateString()}
-            </p>
-          </div>
-        </div>
-
-        {evaluation.setup.sections.map((section) => (
-          <div
-            key={section.id}
-            className="bg-white shadow-lg rounded-xl p-8 transition-all mb-6"
-          >
-            <h2 className="text-xl font-semibold text-gray-800 mb-6 border-b pb-3 border-gray-200">
-              {section.name}
+    <section className="py-20">
+      <div className="max-w-4xl mx-auto p-8 space-y-8 bg-gray-50 shadow-xl rounded-2xl">
+        <form onSubmit={handleSubmit} className="space-y-10">
+          <div className="bg-white shadow-xl rounded-xl p-8">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+              Evaluation ID: {evaluation.id}
             </h2>
-            {section.questions.map((question) => (
-              <div key={question.id} className="mb-8">
-                <label className="block text-gray-700 font-medium mb-2 text-justify">
-                  {question.sequence}. {question.question}
-                </label>
-                {renderInputField(question)}
-              </div>
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <p>
+                <span className="font-semibold text-gray-600">Setup Name:</span>{" "}
+                {evaluation.setup.name}
+              </p>
+              <p>
+                <span className="font-semibold text-gray-600">Major Name:</span>{" "}
+                {evaluation.major_name}
+              </p>
+              <p>
+                <span className="font-semibold text-gray-600">Semester:</span>{" "}
+                {evaluation.semester}
+              </p>
+              <p>
+                <span className="font-semibold text-gray-600">End Date:</span>{" "}
+                {new Date(evaluation.end_date).toLocaleDateString()}
+              </p>
+            </div>
           </div>
-        ))}
 
-        <div className="flex justify-end mt-8">
-          <button
-            type="submit"
-            className="px-10 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105"
-          >
-            Submit
-          </button>
-        </div>
-      </form>
-    </div>
+          {evaluation.setup.sections.map((section) => (
+            <div
+              key={section.id}
+              className="bg-white shadow-lg rounded-xl p-8 transition-all mb-6"
+            >
+              <h2 className="text-xl font-semibold text-gray-800 mb-6 border-b pb-3 border-gray-200">
+                {section.name}
+              </h2>
+              {section.questions.map((question) => (
+                <div key={question.id} className="mb-8">
+                  <label className="block text-gray-700 font-medium mb-2 text-justify">
+                    {question.sequence}. {question.question}
+                  </label>
+                  {renderInputField(question)}
+                </div>
+              ))}
+            </div>
+          ))}
+
+          <div className="flex justify-end mt-8">
+            <button
+              type="submit"
+              className="px-10 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+            >
+              Submit
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
   );
 }

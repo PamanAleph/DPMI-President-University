@@ -23,7 +23,7 @@ export default function EvaluationDetailsPage({
   const accessToken = getAccessToken();
 
   const fetchData = useCallback(async () => {
-    const evaluationData = await fetchEvaluationById(Number(params.id));
+    const evaluationData = await fetchEvaluationById(Number(params.id), accessToken as string);
     if (!evaluationData) {
       redirect("/404");
     } else {
@@ -37,7 +37,7 @@ export default function EvaluationDetailsPage({
         )
       );
     }
-  }, [params.id]);
+  }, [params.id, accessToken]);
 
   useEffect(() => {
     fetchData();
