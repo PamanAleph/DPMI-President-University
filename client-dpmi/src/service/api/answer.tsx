@@ -2,10 +2,18 @@ import { API_ANSWER } from "@/config/config";
 import Answer from "@/models/answer";
 import axios from "axios";
 
-export async function fetchAnswers(evaluationId: number): Promise<Answer[]> {
+export async function fetchAnswers(
+  evaluationId: number,
+  accessToken: string
+): Promise<Answer[]> {
   try {
     const response = await axios.get(
-      `${API_ANSWER}/evaluation/${evaluationId}`
+      `${API_ANSWER}/evaluation/${evaluationId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
     );
     return response.data;
   } catch (error) {
@@ -14,9 +22,16 @@ export async function fetchAnswers(evaluationId: number): Promise<Answer[]> {
   }
 }
 
-export async function createAnswer(answerData: Answer): Promise<Answer> {
+export async function createAnswer(
+  answerData: Answer,
+  accessToken: string
+): Promise<Answer> {
   try {
-    const response = await axios.post(`${API_ANSWER}`, answerData);
+    const response = await axios.post(`${API_ANSWER}`, answerData, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error("Error creating answer:", error);
@@ -26,15 +41,21 @@ export async function createAnswer(answerData: Answer): Promise<Answer> {
 
 export async function updateAnswer(
   answers: Array<{ id: number; answer: string; score: number }>,
-  fileAnswers: Array<{ id: number; files: File[] }>
+  fileAnswers: Array<{ id: number; files: File[] }>,
+  accessToken: string
 ): Promise<void> {
   const formData = new FormData();
 
+  // Append answers and fileAnswers metadata
   formData.append("answers", JSON.stringify(answers));
-  formData.append("fileAnswers", JSON.stringify(fileAnswers.map(fa => ({ id: fa.id }))));
+  formData.append(
+    "fileAnswers",
+    JSON.stringify(fileAnswers.map((fa) => ({ id: fa.id })))
+  );
 
+  // Append actual file data
   fileAnswers.forEach((fileAnswer) => {
-    const file = fileAnswer.files[0]; 
+    const file = fileAnswer.files[0];
     if (file) {
       formData.append(`fileAnswers_${fileAnswer.id}_files_0`, file);
     }
@@ -44,6 +65,7 @@ export async function updateAnswer(
     await axios.put(`${API_ANSWER}/batch-update`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${accessToken}`, // Include accessToken
       },
     });
   } catch (error) {
@@ -52,6 +74,11 @@ export async function updateAnswer(
   }
 }
 
+interface UpdateAnswerScoreParams {
+  evaluationId: number;
+  questionId: number;
+  score: number;
+}
 
 interface UpdateAnswerScoreParams {
   evaluationId: number;
@@ -59,13 +86,24 @@ interface UpdateAnswerScoreParams {
   score: number;
 }
 
-export async function updateAnswerScore({ questionId, score, evaluationId } : UpdateAnswerScoreParams) {
+export async function updateAnswerScore(
+  { questionId, score, evaluationId }: UpdateAnswerScoreParams,
+  accessToken: string
+) {
   try {
-    const response = await axios.put(`${API_ANSWER}/update-score`, {
-      questionId,
-      score,
-      evaluationId,
-    });
+    const response = await axios.put(
+      `${API_ANSWER}/update-score`,
+      {
+        questionId,
+        score,
+        evaluationId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error updating answer score:", error);
@@ -73,9 +111,13 @@ export async function updateAnswerScore({ questionId, score, evaluationId } : Up
   }
 }
 
-export async function deleteAnswer(answerId: number): Promise<void> {
+export async function deleteAnswer(answerId: number, accessToken: string): Promise<void> {
   try {
-    await axios.delete(`${API_ANSWER}/${answerId}`);
+    await axios.delete(`${API_ANSWER}/${answerId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
   } catch (error) {
     console.error("Error deleting answer:", error);
     throw error;

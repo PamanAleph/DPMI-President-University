@@ -30,9 +30,9 @@ export default function Login() {
           { accessToken, username, major_id, is_admin }
         )
       );
-  
-      console.log("Access token saved:", accessToken);
-  
+      if (is_admin === true) {
+        router.push("/admin/dashboard");
+      } 
       router.push("/dashboard");
     } catch (error) {
       console.error("Error during login:", error);

@@ -11,6 +11,7 @@ import Link from "next/link";
 import Select from "react-select";
 import { fetchQuestionBySetupId } from "@/service/api/questions";
 import { createAnswer } from "@/service/api/answer";
+import { getAccessToken } from "@/utils/sessionStorage";
 
 interface SetupActionsProps {
   setupId: number;
@@ -32,6 +33,8 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
     };
     getMajors();
   }, []);
+
+  const accessToken = getAccessToken();
 
   const handleEditSetup = async () => {
     const { value: setupData } = await Swal.fire({
@@ -246,7 +249,7 @@ export default function SetupActions({ setupId, setup }: SetupActionsProps) {
               question_id: question.id,
               answer: null,
               score: null,
-            });
+            }, accessToken as string);
           }
         }
         Swal.close();

@@ -25,6 +25,9 @@ export default function UserLayout({
         // Redirect to home if accessToken is missing
         router.push("/");
       }
+      if (user.is_admin) {
+        router.push("/admin/dashboard");
+      }
     }
   }, [router]);
 

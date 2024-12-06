@@ -9,6 +9,7 @@ import Questions from "@/models/questions";
 import { updateAnswer } from "@/service/api/answer";
 import Swal from "sweetalert2";
 import FormExpired from "@/components/form/FormExpired";
+import { getAccessToken } from "@/utils/sessionStorage";
 
 const SkeletonLoader = () => {
   return (
@@ -39,6 +40,7 @@ export default function EvaluationDetailsPage({
     {}
   );
   const router = useRouter();
+  const accessToken = getAccessToken();
 
   useEffect(() => {
     const encryptedId = params.id;
@@ -267,7 +269,7 @@ export default function EvaluationDetailsPage({
         });
       });
 
-      await updateAnswer(answersWithoutFiles, fileAnswers);
+      await updateAnswer(answersWithoutFiles, fileAnswers , accessToken as string);
 
       Swal.close();
       Swal.fire({
