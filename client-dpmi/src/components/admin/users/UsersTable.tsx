@@ -25,6 +25,9 @@ export default function UsersTable({ users }: UsersTableProps) {
               Major
             </th>
             <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+              Role
+            </th>
+            <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
               Action
             </th>
           </tr>

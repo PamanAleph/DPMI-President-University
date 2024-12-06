@@ -5,16 +5,13 @@ import axios from "axios";
 // todo
 // access_token
 
-export async function GetUserList({ accessToken }: { accessToken: string }) {
+export async function GetUserList() {
   try {
-    const response = await axios.get(`${API_USER}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const response = await axios.get(`${API_USER}`);
+
     return response.data.data;
   } catch (error) {
-    console.error("Error fetching user list:", error);
+    console.log(error);
     throw error;
   }
 }
