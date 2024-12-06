@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Button from "@/components/admin/Button";
 import Title from "@/components/admin/Title";
 import UsersTable from "@/components/admin/users/UsersTable";
 import { GetUserList } from "@/service/api/users";
 import { getAccessToken } from "@/utils/sessionStorage";
+import AddUserModal from "@/components/admin/users/AddUser";
 
 export default function ClientUserPage() {
   const [users, setUsers] = useState([]);
@@ -39,7 +39,7 @@ export default function ClientUserPage() {
     <section className="space-y-4">
       <Title>User List</Title>
       <div className="justify-end flex">
-        <Button className="bg-green-500 text-white">Add User</Button>
+        <AddUserModal />
       </div>
       <UsersTable users={users} />
     </section>

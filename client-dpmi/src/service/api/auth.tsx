@@ -1,5 +1,4 @@
 import { API_AUTH } from "@/config/config";
-import Users from "@/models/users";
 import axios, { AxiosResponse } from "axios";
 
 interface LoginResponseData {
@@ -38,8 +37,15 @@ export async function UserLogin(
   }
 }
 
+interface AdminRegister {
+  email: string;
+  password: string;
+  username: string;
+  major_id: number;
+  isAdmin: boolean;
+}
 
-export async function AdminRegister(user: Users) {
+export async function AdminRegister(user: AdminRegister) {
   try {
     const response = await axios.post(`${API_AUTH}/register`, user);
 

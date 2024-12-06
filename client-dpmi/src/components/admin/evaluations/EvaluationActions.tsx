@@ -12,6 +12,7 @@ import { fetchSetup } from "@/service/api/setup";
 import Setup from "@/models/setup";
 import Major from "@/models/major";
 import { encryptId } from "@/utils/crypto";
+import { getAccessToken } from "@/utils/sessionStorage";
 
 interface EvaluationActionsProps {
   evaluationId: number;
@@ -21,6 +22,7 @@ interface EvaluationActionsProps {
 export default function EvaluationActions({
   evaluation,
 }: EvaluationActionsProps) {
+  const accessToken = getAccessToken();
   const handleCopyLink = () => {
     const encryptedId = encryptId(evaluation.id ?? 0);
     localStorage.setItem("url", encryptedId);
@@ -65,7 +67,7 @@ export default function EvaluationActions({
               ?.major_name || "Unknown Major",
           value: evaluation.major_id,
         }
-      : { label: "Unknown Major", value: 0 }; 
+      : { label: "Unknown Major", value: 0 };
 
     const selectedSetup = {
       label: evaluation.setup_name ?? "Unknown Setup",
@@ -167,7 +169,7 @@ export default function EvaluationActions({
           major_id: formValues.majorId,
           semester: formValues.semester,
           end_date: new Date(formValues.end_date),
-        });
+        }, accessToken as string);
 
         Swal.close();
         Swal.fire(
@@ -200,7 +202,6 @@ export default function EvaluationActions({
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-
           Swal.fire({
             title: "Updating...",
             text: "Please wait while the evaluation is being deleted.",
@@ -210,7 +211,7 @@ export default function EvaluationActions({
             },
           });
 
-          await deleteEvaluation(evaluation.id ?? 0);
+          await deleteEvaluation(evaluation.id ?? 0, accessToken as string);
           Swal.close();
           Swal.fire(
             "Deleted!",
