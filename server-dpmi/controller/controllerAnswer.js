@@ -145,7 +145,7 @@ const updateAnswerData = async (req, res) => {
       id: parseInt(fileAnswer.id, 10),
       file: req.files.find(
         (file) => file.fieldname === `fileAnswers_${fileAnswer.id}_files_0`
-      ), // Expecting a single file per answer
+      ), 
     }));
 
     const updatedAnswers = await updateAnswer(answers, fileAnswers, userId);

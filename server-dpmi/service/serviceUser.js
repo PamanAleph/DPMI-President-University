@@ -1,6 +1,5 @@
 const { client } = require("../common/common");
 
-// Get All Users with Major Name
 const getAllUsers = async () => {
   const query = `
     SELECT 
@@ -58,7 +57,6 @@ const updateUser = async (id, { email, username, major_id, is_admin }) => {
     throw new Error("User not found");
   }
 
-  // Fetch the updated user with major_name
   return getUserById(id);
 };
 

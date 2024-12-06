@@ -17,13 +17,14 @@ export default function UserLayout({
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user");
     if (!storedUser) {
-      // Redirect to home if user data is not found
       router.push("/");
     } else {
       const user = JSON.parse(storedUser);
       if (!user.accessToken) {
-        // Redirect to home if accessToken is missing
         router.push("/");
+      }
+      if (user.is_admin) {
+        router.push("/admin/dashboard");
       }
     }
   }, [router]);
