@@ -3,7 +3,7 @@ interface Major {
     name: string;
     head: string;
     slug: string;
-    emails: string[];
+    emails: string[] | null;
     created_at: Date;
 }
 

@@ -82,3 +82,18 @@ export async function DeleteUser(userId: number, accessToken: string) {
     throw error;
   }
 }
+
+export const fetchUsersByMajor = async (majorId: number, accessToken: string) => {
+  try {
+    const response = await axios.get(`${API_USER}/major/${majorId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return response.data.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
