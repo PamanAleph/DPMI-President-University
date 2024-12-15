@@ -5,7 +5,7 @@ import axios from "axios";
 // todo
 // access_token
 
-export async function GetUserList( accessToken: string) {
+export async function GetUserList(accessToken: string) {
   try {
     const response = await axios.get(`${API_USER}`, {
       headers: {
@@ -49,9 +49,17 @@ export async function CreateUser(accessToken: string, user: Users) {
   }
 }
 
-export async function UpdateUser(userId: number, user: Users) {
+export async function UpdateUser(
+  userId: number,
+  user: Users,
+  accessToken: string
+) {
   try {
-    const response = await axios.put(`${API_USER}/${userId}`, user);
+    const response = await axios.put(`${API_USER}/${userId}`, user, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     return response.data.data;
   } catch (error) {
@@ -60,9 +68,13 @@ export async function UpdateUser(userId: number, user: Users) {
   }
 }
 
-export async function DeleteUser(userId: number) {
+export async function DeleteUser(userId: number, accessToken: string) {
   try {
-    const response = await axios.delete(`${API_USER}/id/${userId}`);
+    const response = await axios.delete(`${API_USER}/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     return response.data.data;
   } catch (error) {

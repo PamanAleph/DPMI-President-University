@@ -27,7 +27,7 @@ export default function Login() {
       sessionStorage.setItem(
         "user",
         JSON.stringify(
-          { accessToken, username, major_id, is_admin }
+          { accessToken, username, major_id, is_admin,email }
         )
       );
       if (is_admin === true) {

@@ -1,13 +1,32 @@
-import React from "react";
+"use client"
+import React, { useEffect, useState } from "react";
 import Users from "@/models/users";
 import UsersAction from "./UsersAction";
-// import UsersAction from "./UsersAction";
+import { fetchMajor } from "@/service/api/major";
 
 interface UsersTableProps {
   users: Users[];
 }
 
 export default function UsersTable({ users }: UsersTableProps) {
+  const [majors, setMajors] = useState<{ value: number; label: string }[]>([]);
+
+  useEffect(() => {
+    const getMajors = async () => {
+      try {
+        const majorsData = await fetchMajor();
+        const formattedMajors = majorsData.map((major: { id: number; name: string }) => ({
+          value: major.id,
+          label: major.name,
+        }));
+        setMajors(formattedMajors);
+      } catch (error) {
+        console.error("Failed to fetch majors:", error);
+      }
+    };
+
+    getMajors();
+  }, []); 
   return (
     <div className="overflow-x-auto w-full">
       <table className="min-w-full table-auto divide-y divide-gray-200 bg-white text-sm">
@@ -52,10 +71,7 @@ export default function UsersTable({ users }: UsersTableProps) {
                 {user.is_admin ? "Admin" : "User"}
               </td>
               <td className="whitespace-nowrap px-4 py-2">
-                <UsersAction/>
-                {/* Add action buttons or components here */}
-                {/* Example: */}
-                {/* <UsersAction user={user} userId={user.id} /> */}
+                <UsersAction user={user} userId={user.id} majors={majors} />
               </td>
             </tr>
           ))}
