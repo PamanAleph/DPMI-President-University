@@ -2,9 +2,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
   const [user, setUser] = useState<null | {
     accessToken: string;
     is_admin: boolean;
@@ -22,6 +24,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     sessionStorage.removeItem("user");
+    router.push("/auth/login");
     setUser(null);
   };
 
@@ -94,9 +97,7 @@ export default function Navbar() {
                   strokeLinejoin="round"
                   strokeWidth="2"
                   d={
-                    isOpen
-                      ? "M6 18L18 6M6 6l12 12"
-                      : "M4 6h16M4 12h16M4 18h16"
+                    isOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"
                   }
                 />
               </svg>
