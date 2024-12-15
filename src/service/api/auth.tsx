@@ -42,7 +42,7 @@ interface AdminRegister {
   password: string;
   username: string;
   major_id: number;
-  isAdmin: boolean;
+  is_admin: boolean;
 }
 
 export async function AdminRegister(user: AdminRegister) {

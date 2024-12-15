@@ -1,5 +1,6 @@
 import React from "react";
 import Users from "@/models/users";
+import UsersAction from "./UsersAction";
 // import UsersAction from "./UsersAction";
 
 interface UsersTableProps {
@@ -51,6 +52,7 @@ export default function UsersTable({ users }: UsersTableProps) {
                 {user.is_admin ? "Admin" : "User"}
               </td>
               <td className="whitespace-nowrap px-4 py-2">
+                <UsersAction/>
                 {/* Add action buttons or components here */}
                 {/* Example: */}
                 {/* <UsersAction user={user} userId={user.id} /> */}

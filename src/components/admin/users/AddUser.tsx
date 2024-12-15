@@ -44,7 +44,7 @@ export default function AddUserModal() {
         const password = (document.getElementById("password") as HTMLInputElement)?.value;
         const username = (document.getElementById("username") as HTMLInputElement)?.value;
         const major_id = (document.getElementById("major-select") as HTMLSelectElement)?.value;
-        const isAdmin = (document.getElementById("is-admin") as HTMLInputElement)?.checked;
+        const is_admin = (document.getElementById("is-admin") as HTMLInputElement)?.checked;
 
         if (!major_id || !email || !password || !username) {
           Swal.showValidationMessage("Please fill out all fields.");
@@ -55,7 +55,7 @@ export default function AddUserModal() {
           email,
           password,
           username,
-          isAdmin,
+          is_admin,
           major_id: parseInt(major_id, 10),
         };
       },
