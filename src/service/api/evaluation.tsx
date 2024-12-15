@@ -1,15 +1,19 @@
 import { API_EVALUATION } from "@/config/config";
 import Evaluation from "@/models/evaluation";
 import EvaluationDetails from "@/models/evaluationDetails";
+import { EvaluationMajor } from "@/models/EvaluationMajor";
 import axios from "axios";
 
 export const fetchEvaluations = async (accessToken: string) => {
   try {
-    const response = await axios.get<{ data: Evaluation[] }>(`${API_EVALUATION}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const response = await axios.get<{ data: Evaluation[] }>(
+      `${API_EVALUATION}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
     return response.data.data;
   } catch (error) {
     console.error("Error fetching evaluations:", error);
@@ -113,7 +117,10 @@ export const checkEvaluation = async (
   }
 };
 
-export const fetchEvaluationById = async (evaluationId: number, accessToken: string) => {
+export const fetchEvaluationById = async (
+  evaluationId: number,
+  accessToken: string
+) => {
   try {
     const response = await axios.get<{ data: EvaluationDetails }>(
       `${API_EVALUATION}/id/${evaluationId}`,
@@ -130,19 +137,33 @@ export const fetchEvaluationById = async (evaluationId: number, accessToken: str
   }
 };
 
-export const fetchEvaluationByMajorId = async (major_id: number, accessToken: string) => {
+export const fetchEvaluationByMajorId = async (): Promise<
+  EvaluationMajor[]
+> => {
   try {
-    const response = await axios.get<{ data: Evaluation[] }>(
-      `${API_EVALUATION}/major/${major_id}`,
+    const userData = sessionStorage.getItem("user");
+    if (!userData) {
+      throw new Error("User data not found in sessionStorage");
+    }
+    const { accessToken, major_id } = JSON.parse(userData);
+
+    if (!accessToken || !major_id) {
+      throw new Error("Missing accessToken or major_id in user data");
+    }
+
+    const response = await axios.get<{ data: EvaluationMajor[] }>(
+      `${API_EVALUATION}/major`,
       {
+        params: { major_id },
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       }
     );
+
     return response.data.data;
   } catch (error) {
-    console.error("Error fetching evaluation by setup ID:", error);
+    console.error("Error fetching evaluation by major ID:", error);
     return [];
   }
 };
