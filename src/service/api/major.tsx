@@ -14,7 +14,7 @@ export const fetchMajor = async (): Promise<Major[]> => {
 };
 
 export const createMajor = async (
-  majorData: Omit<Major, "id" | "created_at">
+  majorData: Omit<Major, "id" | "created_at" |"emails">
 ): Promise<Major[]> => {
   try {
     const response = await axios.post<{ data: Major[] }>(
