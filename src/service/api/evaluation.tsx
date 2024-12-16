@@ -2,6 +2,7 @@ import { API_EVALUATION } from "@/config/config";
 import Evaluation from "@/models/evaluation";
 import EvaluationDetails from "@/models/evaluationDetails";
 import { EvaluationMajor } from "@/models/EvaluationMajor";
+import { getAccessToken } from "@/utils/sessionStorage";
 import axios from "axios";
 
 export const fetchEvaluations = async (accessToken: string) => {
@@ -167,3 +168,20 @@ export const fetchEvaluationByMajorId = async (): Promise<
     return [];
   }
 };
+
+export const getEvaluationPage = async ({id}: {id: number}) => {
+  const accessToken = getAccessToken();
+  try {
+    const response = await axios.get(
+      `${API_EVALUATION}/check/${id}`,{
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching evaluation by ID:", error);
+    return null;
+  }
+}

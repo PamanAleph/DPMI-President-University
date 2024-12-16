@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import Logo from "@/assets/pu_logo_new.png"
 import { useRouter } from "next/navigation";
 
 export default function Navbar() {
@@ -37,11 +38,11 @@ export default function Navbar() {
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" passHref>
                 <Image
-                  className="h-8 w-auto"
-                  src="/logo.svg" // Replace with your logo
+                  className="h-14 w-auto"
+                  src={Logo}
                   alt="Logo"
-                  width={32}
-                  height={32}
+                  width={1920}
+                  height={1080}
                 />
               </Link>
             </div>

@@ -19,7 +19,7 @@ export default function EvaluationsPage() {
           setEvaluations(data);
           setError(null);
         }
-      } catch (err) {
+      } catch {
         if (isMounted) {
           setError("Failed to fetch evaluations.");
         }
@@ -114,9 +114,9 @@ export default function EvaluationsPage() {
                       Expired
                     </button>
                   )}
-                  <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                  <Link href={`evaluations/${item.evaluation_id}`} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                     Detail
-                  </button>
+                  </Link>
                 </td>
               </tr>
             ))}
